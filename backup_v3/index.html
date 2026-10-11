@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Failure Predictor & Telemetry Monitor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>PREDICTIVE MAINTENANCE SUITE</h1>
+          <div class="brand-subtitle">
+            <span>Edge Telemetry & Failure Mode Classifier</span>
+            <span class="dataset-pill">AI4I-2020 Standard</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnToggleSim" class="sim-toggle-btn">
+          <span class="indicator-dot"></span>
+          <span id="simBtnLabel">Live Stream: OFF</span>
+        </button>
+        <div class="machine-id-badge">
+          <span class="machine-id-label">Target Asset</span>
+          <span class="machine-id-val" id="activeAssetId">CNC-MILL-08</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="presets-section" aria-label="Operational Scenarios">
+      <span class="presets-label">Operational Presets:</span>
+      <div class="presets-container" id="presetsList"></div>
+    </section>
+
+    <main class="dashboard-grid">
+      <section class="card controls-card" aria-labelledby="controlsHeading">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+            </div>
+            <h2 id="controlsHeading" class="card-title">Sensor Telemetry Ingestion</h2>
+          </div>
+          <button id="btnResetDefaults" class="card-action-btn" type="button">Reset Baseline</button>
+        </div>
+        <div class="controls-list">
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label class="control-label">Product Variant Grade</label></div>
+              <span class="control-val-badge" id="badgeProductType">Type M</span>
+            </div>
+            <div class="type-selector-group" role="radiogroup">
+              <button type="button" class="type-btn" data-type="L" id="btnTypeL"><span>Type L (Low)</span><small>High Strain Risk</small></button>
+              <button type="button" class="type-btn active" data-type="M" id="btnTypeM"><span>Type M (Med)</span><small>Balanced Grade</small></button>
+              <button type="button" class="type-btn" data-type="H" id="btnTypeH"><span>Type H (High)</span><small>High Durability</small></button>
+            </div>
+          </div>
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label for="sliderAirTemp" class="control-label">Air Ambient Temperature</label></div>
+              <span class="control-val-badge"><span id="valAirTemp">298.5</span> <span class="control-unit">K</span>
+                <span id="valAirTempC" style="color:var(--text-dim);font-size:0.8rem;margin-left:4px;">(25.4°C)</span></span>
+            </div>
+            <div class="range-container"><input type="range" id="sliderAirTemp" class="slider-input" min="295.0" max="305.0" step="0.1" value="298.5"></div>
+            <div class="range-bounds"><span>295.0 K</span><span>305.0 K</span></div>
+          </div>
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label for="sliderProcTemp" class="control-label">Process Cutting Temperature</label></div>
+              <span class="control-val-badge"><span id="valProcTemp">308.8</span> <span class="control-unit">K</span>
+                <span id="valProcTempC" style="color:var(--text-dim);font-size:0.8rem;margin-left:4px;">(35.7°C)</span></span>
+            </div>
+            <div class="range-container"><input type="range" id="sliderProcTemp" class="slider-input" min="305.0" max="315.0" step="0.1" value="308.8"></div>
+            <div class="range-bounds"><span>305.0 K</span><span>315.0 K</span></div>
+          </div>
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label for="sliderSpeed" class="control-label">Spindle Rotational Speed</label></div>
+              <span class="control-val-badge"><span id="valSpeed">1540</span> <span class="control-unit">rpm</span></span>
+            </div>
+            <div class="range-container"><input type="range" id="sliderSpeed" class="slider-input" min="1100" max="2900" step="5" value="1540"></div>
+            <div class="range-bounds"><span>1100 rpm</span><span>2900 rpm</span></div>
+          </div>
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label for="sliderTorque" class="control-label">Spindle Torque Load</label></div>
+              <span class="control-val-badge"><span id="valTorque">39.5</span> <span class="control-unit">Nm</span></span>
+            </div>
+            <div class="range-container"><input type="range" id="sliderTorque" class="slider-input" min="3.5" max="80.0" step="0.5" value="39.5"></div>
+            <div class="range-bounds"><span>3.5 Nm</span><span>80.0 Nm</span></div>
+          </div>
+          <div class="control-item">
+            <div class="control-header">
+              <div class="control-label-wrapper"><label for="sliderWear" class="control-label">Tool Cumulative Wear</label></div>
+              <span class="control-val-badge"><span id="valWear">85</span> <span class="control-unit">min</span></span>
+            </div>
+            <div class="range-container"><input type="range" id="sliderWear" class="slider-input" min="0" max="260" step="1" value="85"></div>
+            <div class="range-bounds"><span>0 min</span><span>260 min</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card prediction-overview-card status-optimal" id="predictionOverviewCard" aria-labelledby="predictionHeading">
+        <div class="card-glow-bg"></div>
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <h2 id="predictionHeading" class="card-title">Real-Time Risk Diagnostic</h2>
+          </div>
+          <span class="dataset-pill" id="riskLevelTag">LOW RISK</span>
+        </div>
+        <div class="gauge-hero-section">
+          <div class="gauge-visual">
+            <svg class="gauge-svg" viewBox="0 0 160 160">
+              <circle class="gauge-track" cx="80" cy="80" r="70"></circle>
+              <circle id="gaugeFill" class="gauge-fill" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <div class="gauge-content">
+              <div class="gauge-percentage"><span id="riskPercentage">2.4</span><span class="gauge-percentage-symbol">%</span></div>
+              <span class="gauge-label">Failure Risk</span>
+            </div>
+          </div>
+          <div class="status-summary">
+            <div id="machineStatusBadge" class="status-badge">
+              <span class="indicator-dot" style="background: currentColor;"></span>
+              <span id="machineStatusText">OPTIMAL OPERATION</span>
+            </div>
+            <div class="status-metrics-row">
+              <div class="mini-metric-box"><div class="mini-metric-label">Asset Health</div><div class="mini-metric-value" id="healthIndexVal">98 / 100</div></div>
+              <div class="mini-metric-box"><div class="mini-metric-label">Calculated Power</div><div class="mini-metric-value" id="metricPower">6,370 W</div></div>
+              <div class="mini-metric-box"><div class="mini-metric-label">Thermal Delta (ΔT)</div><div class="mini-metric-value" id="metricTempDelta">10.3 K</div></div>
+              <div class="mini-metric-box"><div class="mini-metric-label">Overstrain Metric</div><div class="mini-metric-value" id="metricOverstrain">3,358 min·Nm</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="modes-section">
+          <h3 class="modes-section-title">Failure Mode Attribution Spectrum</h3>
+          <div class="modes-list">
+            <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">TWF</span><span>Tool Wear Failure</span></div><span class="mode-pct" id="pctTWF">4.2%</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barTWF" style="width: 4.2%;"></div></div></div>
+            <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">HDF</span><span>Heat Dissipation Failure</span></div><span class="mode-pct" id="pctHDF">1.0%</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barHDF" style="width: 1.0%;"></div></div></div>
+            <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">PWF</span><span>Power Boundary Failure</span></div><span class="mode-pct" id="pctPWF">1.0%</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barPWF" style="width: 1.0%;"></div></div></div>
+            <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">OSF</span><span>Overstrain Failure</span></div><span class="mode-pct" id="pctOSF">1.0%</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barOSF" style="width: 1.0%;"></div></div></div>
+            <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">RNF</span><span>Random Sensor Anomaly</span></div><span class="mode-pct" id="pctRNF">0.1%</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barRNF" style="width: 0.1%;"></div></div></div>
+          </div>
+        </div>
+        <div class="prescriptions-section">
+          <h3 class="modes-section-title" style="margin-bottom:0.75rem;">Prescriptive Actions</h3>
+          <div class="prescriptions-container" id="prescriptionsList"></div>
+        </div>
+      </section>
+    </main>
+
+    <section class="card chart-section" aria-labelledby="streamChartHeading">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-title-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h2 id="streamChartHeading" class="card-title">Live Sensor Dynamic Waveform</h2>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-color" style="background:#06b6d4;"></span><span>Speed (rpm / 30)</span></div>
+          <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span><span>Torque (Nm)</span></div>
+          <div class="legend-item"><span class="legend-color" style="background:#f43f5e;"></span><span>Failure Risk (%)</span></div>
+          <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span><span>Tool Wear (min / 3)</span></div>
+        </div>
+      </div>
+      <div class="canvas-wrapper"><canvas id="telemetryChart" width="1400" height="200"></canvas></div>
+    </section>
+
+    <section class="card logs-section" aria-labelledby="logsHeading">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="card-title-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <h2 id="logsHeading" class="card-title">Telemetry Run Registry (Click row to load telemetry state)</h2>
+        </div>
+        <span class="machine-id-label">Batch Size: 10 Records</span>
+      </div>
+      <div class="table-wrapper">
+        <table class="telemetry-table">
+          <thead><tr><th>Asset Tag</th><th>Variant</th><th>Air Temp</th><th>Process Temp</th><th>Speed</th><th>Torque</th><th>Tool Wear</th><th>Risk Score</th><th>Status</th><th>Failure Mode</th></tr></thead>
+          <tbody id="telemetryTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <div>Machine Failure Prediction System v3.0 (Real Trained Model) • Client-Side Inference</div>
+      <div class="footer-links"><span class="footer-link">Offline ML Prototype</span><span class="footer-link">AI4I Dataset Benchmark</span></div>
+    </footer>
+  </div>
+
+  <script src="model-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

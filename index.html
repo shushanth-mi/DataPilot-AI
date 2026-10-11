@@ -1,0 +1,1770 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MACHINE INTELLIGENCE V9.0 | Machine Failure Prediction — Predictive Maintenance</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <div class="bg-fx" aria-hidden="true">
+    <div class="fx-grid"></div>
+    <div class="fx-glow fx-g1"></div>
+    <div class="fx-glow fx-g2"></div>
+    <div class="fx-glow fx-g3"></div>
+    <div class="fx-streaks"></div>
+    <div class="fx-particles"></div>
+  </div>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="hb-zone hb-left">
+        <div class="brand-section">
+          <div class="brand-icon brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect class="bm-frame" x="5.5" y="5.5" width="37" height="4.2" rx="1.3"/>
+              <rect class="bm-frame" x="6.4" y="9.7" width="4.4" height="28.6" rx="1.2"/>
+              <rect class="bm-frame" x="37.2" y="9.7" width="4.4" height="28.6" rx="1.2"/>
+              <rect class="bm-frame" x="5.5" y="38.3" width="37" height="4.2" rx="1.3"/>
+              <path class="bm-spindle" d="M24 9.7v9.4"/>
+              <path class="bm-tool" d="M20.4 19.1h7.2L24 25.1z"/>
+              <path class="bm-core" d="M24 26.2l5.4 3.1v6.2L24 38.6l-5.4-3.1v-6.2z"/>
+              <circle class="bm-node" cx="24" cy="26.2" r="1.35"/>
+              <path class="bm-signal" d="M31.6 29.1a6 6 0 010 5.8"/>
+              <path class="bm-signal" d="M35.4 26.4a11 11 0 010 11.2"/>
+            </svg>
+          </div>
+          <div class="brand-titles">
+            <h1>MACHINE INTELLIGENCE</h1>
+            <div class="brand-subtitle">AI-POWERED PREDICTIVE MAINTENANCE</div>
+            <div class="brand-meta">
+              <span class="twin-tag">INDUSTRIAL DIGITAL TWIN</span>
+              <span class="ver-tag">V9.0</span>
+              <span class="dataset-pill">AI4I-2020</span>
+              <span class="dataset-pill pill-offline" title="No live factory connection. All telemetry is simulated by this offline prototype.">&#9679; OFFLINE ML SIMULATION</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hb-zone hb-center" aria-label="System status">
+        <span class="sys-chip" id="sysStatusChip" title="Application state"><span class="sys-dot"></span> SYSTEM ONLINE</span>
+        <span class="sys-chip" id="mlEngineChip" title="Inference engine availability"><span class="sys-dot"></span> ML ENGINE CHECKING</span>
+        <span class="sys-chip" id="teleChip" title="Simulated telemetry stream state"><span class="sys-dot sys-dot-cyan"></span> TELEMETRY IDLE</span>
+        <span class="sys-chip chip-neutral" id="srcChip" title="Data source — simulated telemetry scored by the bundled offline model"><span class="sys-dot sys-dot-cyan"></span> DATA · AI4I-2020 / SIM</span>
+        <span class="sys-chip chip-neutral" id="deployChip" title="Deployment mode — no cloud, no factory connection"><span class="sys-dot sys-dot-grey"></span> OFFLINE PROTOTYPE</span>
+      </div>
+      <div class="hb-zone hb-right">
+        <button id="btnAlerts" class="icon-btn" type="button" aria-label="Open alert center" title="Alert Center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="alert-count" id="alertCount">0</span>
+        </button>
+        <button id="btnDemoMode" class="header-btn demo-btn" type="button" title="Run the scripted 7-step presentation demo (simulation)">DEMO MODE</button>
+        <button id="btnToggleSim" class="sim-toggle-btn" type="button" title="Toggle the simulated telemetry stream" aria-pressed="false">
+          <span class="indicator-dot"></span>
+          <span id="simBtnLabel">Telemetry Sim: OFF</span>
+        </button>
+        <span class="live-tag mode-manual" id="ccMode" title="Operating mode">MANUAL</span>
+        <span class="clock-tag" id="ccClock" aria-label="Local time">--:--:--</span>
+        <div class="machine-id-badge">
+          <span class="machine-id-label">Target Asset</span>
+          <span class="machine-id-val" id="activeAssetId">CNC-MILL-08</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="demoBanner" class="demo-banner hidden" role="status" aria-live="polite">
+      <div class="demo-banner-left">
+        <span class="demo-tag">DEMO MODE &middot; SIMULATION</span>
+        <span class="demo-step" id="demoStepLabel">Ready</span>
+        <div class="demo-progress" aria-hidden="true"><div class="demo-progress-fill" id="demoProgress" style="width:0%"></div></div>
+      </div>
+      <div class="demo-banner-actions">
+        <button class="card-action-btn" id="btnDemoPlay" type="button">&#9654; Play</button>
+        <button class="card-action-btn" id="btnDemoPause" type="button">&#10074;&#10074; Pause</button>
+        <button class="card-action-btn" id="btnDemoReset" type="button">Reset</button>
+        <button class="card-action-btn" id="btnDemoClose" type="button">Exit</button>
+      </div>
+    </div>
+
+    <aside id="alertPanel" class="alert-panel hidden" aria-label="Alert center">
+      <div class="alert-panel-header">
+        <h3>Alert Center <span class="muted-note">Prototype Alert</span></h3>
+        <button class="card-action-btn" id="btnAlertClose" type="button" aria-label="Close alert center">&#10005;</button>
+      </div>
+      <div class="alert-panel-note">Alerts are generated from this prototype's own thresholds and advisory indicators. Not an industrial safety system.</div>
+      <div class="alert-panel-list" id="alertList"></div>
+    </aside>
+
+    <nav class="main-nav" role="tablist" aria-label="Application sections">
+      <button class="nav-btn active" data-view="dashboard" role="tab" aria-selected="true" title="Overview — command center"><span class="nav-ico" aria-hidden="true">&#8962;</span><span class="nav-lbl">OVERVIEW</span></button>
+      <button class="nav-btn" data-view="live" role="tab" aria-selected="false" title="Live AI telemetry"><span class="nav-ico" aria-hidden="true">&#9673;</span><span class="nav-lbl">LIVE AI</span></button>
+      <button class="nav-btn" data-view="prediction" role="tab" aria-selected="false" title="Prediction console"><span class="nav-ico" aria-hidden="true">&#9671;</span><span class="nav-lbl">PREDICT</span></button>
+      <button class="nav-btn" data-view="viz3d" role="tab" aria-selected="false" title="Digital twin + risk space"><span class="nav-ico" aria-hidden="true">&#9678;</span><span class="nav-lbl">DIGITAL TWIN</span></button>
+      <button class="nav-btn" data-view="models" role="tab" aria-selected="false" title="Model laboratory"><span class="nav-ico" aria-hidden="true">&#9651;</span><span class="nav-lbl">MODELS</span></button>
+      <button class="nav-btn" data-view="xai" role="tab" aria-selected="false" title="Explainable AI intelligence center — why the model decided"><span class="nav-ico" aria-hidden="true">&#9670;</span><span class="nav-lbl">EXPLAIN AI</span></button>
+      <button class="nav-btn" data-view="analytics" role="tab" aria-selected="false" title="Session analytics"><span class="nav-ico" aria-hidden="true">&#9643;</span><span class="nav-lbl">ANALYTICS</span></button>
+      <button class="nav-btn" data-view="scenarios" role="tab" aria-selected="false" title="Scenario lab + replay"><span class="nav-ico" aria-hidden="true">&#8963;</span><span class="nav-lbl">SCENARIOS</span></button>
+      <button class="nav-btn" data-view="whatif" role="tab" aria-selected="false" title="Scenario Lab — what-if machine intelligence"><span class="nav-ico" aria-hidden="true">&#9673;</span><span class="nav-lbl">SCENARIO LAB</span></button>
+      <button class="nav-btn" data-view="history" role="tab" aria-selected="false" title="Prediction history"><span class="nav-ico" aria-hidden="true">&#9638;</span><span class="nav-lbl">HISTORY</span></button>
+      <button class="nav-btn" data-view="dataset" role="tab" aria-selected="false" title="Dataset loader"><span class="nav-ico" aria-hidden="true">&#9707;</span><span class="nav-lbl">DATASET</span></button>
+      <button class="nav-btn" data-view="fleet" role="tab" aria-selected="false" title="Machine fleet"><span class="nav-ico" aria-hidden="true">&#9676;</span><span class="nav-lbl">FLEET</span></button>
+      <button class="nav-btn" data-view="maintenance" role="tab" aria-selected="false" title="Maintenance advisories"><span class="nav-ico" aria-hidden="true">&#9881;</span><span class="nav-lbl">MAINTENANCE</span></button>
+      <button class="nav-btn" data-view="settings" role="tab" aria-selected="false" title="Settings / system"><span class="nav-ico" aria-hidden="true">&#10022;</span><span class="nav-lbl">SYSTEM</span></button>
+    </nav>
+
+    <main id="viewHost">
+      <section class="view" id="view-dashboard" role="tabpanel" aria-label="Dashboard">
+        <div class="view-head">
+          <div><h2 class="view-title">Machine Health Overview</h2>
+          <span class="view-sub">Live-bound state from the application's central pipeline</span></div>
+          <span class="view-sub" id="dashUpdatedAt">--</span>
+        </div>
+        <div class="cc-hero">
+          <div class="cc-twin-col">
+            <div class="twin-holder" id="twinHeroHolder">
+              <div class="twin-stage" id="twinStage">
+              <div class="twin-topbar">
+                <span class="twin-asset" id="twinAssetId">CNC-MILL-08</span>
+                <span class="twin-title">Industrial Digital Twin &middot; Animated Machine</span>
+                <span class="twin-band band-normal" id="twinBandTag">LOW RISK</span>
+              </div>
+              <canvas id="twinCanvas" aria-label="Animated 3D digital twin of the monitored milling centre"></canvas>
+              <div class="twin-hud hud-t" data-sensor="wear" title="Tool wear sensor"><span class="hud-k">TOOL WEAR</span><span class="hud-v"><b id="hudWear">--</b> <small>min</small></span><span class="hud-dot"></span></div>
+              <div class="twin-hud hud-tl" data-sensor="air" title="Air ambient temperature sensor"><span class="hud-k">AIR TEMP</span><span class="hud-v"><b id="hudAir">--</b> <small>K</small></span><span class="hud-dot"></span></div>
+              <div class="twin-hud hud-bl" data-sensor="proc" title="Process cutting temperature sensor"><span class="hud-k">PROCESS TEMP</span><span class="hud-v"><b id="hudProc">--</b> <small>K</small></span><span class="hud-dot"></span></div>
+              <div class="twin-hud hud-tr" data-sensor="torque" title="Spindle torque sensor"><span class="hud-k">TORQUE</span><span class="hud-v"><b id="hudTorque">--</b> <small>Nm</small></span><span class="hud-dot"></span></div>
+              <div class="twin-hud hud-br" data-sensor="rpm" title="Spindle speed sensor"><span class="hud-k">SPINDLE RPM</span><span class="hud-v"><b id="hudRpm">--</b></span><span class="hud-dot"></span></div>
+              <div class="twin-hud-pop hidden" id="twinHud">
+                <div class="pop-head"><span id="twinHudName">TORQUE</span><button id="twinHudClose" type="button" aria-label="Close sensor detail">&#10005;</button></div>
+                <div class="pop-value"><b id="twinHudValue">--</b> <span id="twinHudUnit">Nm</span></div>
+                <div class="pop-row"><span>STATUS</span><b id="twinHudStatus" class="ok">NORMAL</b></div>
+                <div class="pop-row"><span>TREND</span><b id="twinHudTrend">STABLE</b></div>
+                <div class="pop-note" id="twinHudNote">Advisory rule level &mdash; not a model output.</div>
+              </div>
+              <div class="twin-cam">
+                <button id="twinAutoRotate" class="cam-btn active" type="button" title="Slow automatic camera orbit">&#8635; AUTO ROTATE</button>
+                <button id="twinResetCam" class="cam-btn" type="button" title="Reset the camera">&#9678; RESET CAMERA</button>
+                <button id="twinInteractive" class="cam-btn active" type="button" title="Interactive drag orbit">&#9995; INTERACTIVE</button>
+                <span class="cam-hint">DRAG TO ORBIT &middot; SCROLL TO ZOOM &middot; CLICK A SENSOR NODE</span>
+              </div>
+            </div>
+            </div>
+            <div class="cc-strip" id="twinStrip" aria-label="Live telemetry strip">
+              <div class="strip-item" data-k="air"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">AIR TEMP</span></div><span class="strip-v"><b id="stripValAir">--</b> <small>K</small></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkAir" points=""/></svg></div>
+              <div class="strip-item" data-k="proc"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">PROCESS</span></div><span class="strip-v"><b id="stripValProc">--</b> <small>K</small></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkProc" points=""/></svg></div>
+              <div class="strip-item" data-k="rpm"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">RPM</span></div><span class="strip-v"><b id="stripValRpm">--</b></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkRpm" points=""/></svg></div>
+              <div class="strip-item" data-k="torque"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">TORQUE</span></div><span class="strip-v"><b id="stripValTorque">--</b> <small>Nm</small></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkTorque" points=""/></svg></div>
+              <div class="strip-item" data-k="wear"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">TOOL WEAR</span></div><span class="strip-v"><b id="stripValWear">--</b> <small>min</small></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkWear" points=""/></svg></div>
+              <div class="strip-item s-risk" data-k="risk"><div class="strip-top"><span class="strip-dot"></span><span class="strip-k">FAILURE RISK</span></div><span class="strip-v"><b id="stripValRisk">--</b> <small>%</small></span><svg class="strip-spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="stripSparkRisk" points=""/></svg></div>
+            </div>
+          </div>
+<aside class="cc-ai" aria-label="AI intelligence panel">
+            <div class="ai-head">
+              <span class="ai-title">AI Intelligence</span>
+              <span class="ai-live" id="aiLiveTag">&#9679; LIVE</span>
+            </div>
+            <div class="risk-arc" id="riskArc">
+              <svg class="arc-svg" viewBox="0 0 240 240" aria-hidden="true">
+                <circle class="arc-track" cx="120" cy="120" r="94.9"></circle>
+                <circle class="arc-fill" id="arcFill" cx="120" cy="120" r="94.9"></circle>
+                <circle class="arc-seg seg-1" cx="120" cy="120" r="110"></circle>
+                <circle class="arc-seg seg-2" cx="120" cy="120" r="110"></circle>
+                <circle class="arc-seg seg-3" cx="120" cy="120" r="110"></circle>
+                <circle class="arc-seg seg-4" cx="120" cy="120" r="110"></circle>
+              </svg>
+              <div class="arc-center">
+                <span class="arc-value"><b id="twinRiskVal">--</b><span>%</span></span>
+                <span class="arc-label">Failure Risk</span>
+                <span class="arc-band" id="twinRiskLabel">LOW RISK</span>
+              </div>
+              <div class="arc-regions" title="Display bands derived from the configured warning / critical thresholds">
+                <span class="rg-1" data-region="1">LOW</span><span class="rg-2" data-region="2">MEDIUM</span><span class="rg-3" data-region="3">HIGH</span><span class="rg-4" data-region="4">CRITICAL</span>
+              </div>
+            </div>
+            <div class="ai-chips">
+              <div class="ai-chip chip-live"><span>Model</span><b id="twinModelVal">RANDOM FOREST</b></div>
+              <div class="ai-chip"><span>Health</span><b id="twinHealthVal">--</b></div>
+              <div class="ai-chip"><span>Status</span><b id="twinStatusVal">--</b></div>
+            </div>
+            <div class="neural" id="modelNeural" aria-label="AI model flow: three models feeding the risk engine">
+              <svg class="neural-wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <line class="wire wire-dim" x1="18" y1="20" x2="50" y2="47"></line>
+                <line class="wire wire-dim" x1="82" y1="20" x2="50" y2="47"></line>
+                <line class="wire wire-live" x1="50" y1="47" x2="50" y2="84"></line>
+              </svg>
+              <div class="nn-node pos-dt"><span class="nn-name">Decision Tree</span><span class="nn-status">LIVE</span><span class="nn-val" id="nnDtVal">--</span></div>
+              <div class="nn-node pos-svm"><span class="nn-name">SVM (RBF)</span><span class="nn-status">LIVE</span><span class="nn-val" id="nnSvmVal">--</span></div>
+              <div class="nn-center"><span class="nn-core">AI RISK ENGINE</span><span class="nn-sub">300-TREE RF</span></div>
+              <div class="nn-node nn-live pos-rf"><span class="nn-name">Random Forest</span><span class="nn-status">LIVE</span><span class="nn-val" id="nnValRf">--%</span></div>
+            </div>
+            <div class="ai-signals">
+              <span class="ai-sub">AI Signals &middot; RF ablation vs baseline (pp)</span>
+              <div id="aiSignals"></div>
+            </div>
+            <div class="ai-actions">
+              <button id="btnPresentation" class="ai-btn primary" type="button" title="Hide navigation and maximize the digital twin">&#9974; PRESENTATION MODE</button>
+              <button id="btnGotoPredict" class="ai-btn" type="button" title="Open the prediction console">&#9671; PREDICT</button>
+            </div>
+          </aside>
+        </div>
+        <div class="cc-lower">
+        <div class="card health-overview">
+          <div class="hov-top">
+            <div class="hov-machine">
+              <span class="hov-label">Machine</span>
+              <span class="hov-machine-id" id="dashMachineId">CNC-MILL-08</span>
+              <span class="hov-machine-sub">Milling Center &middot; Simulated Asset</span>
+            </div>
+            <div class="hov-tiles">
+              <div class="hov-tile">
+                <span class="hov-label">Machine Health</span>
+                <span class="hov-value"><span id="dashHealthScore">--</span> <small>/ 100</small></span>
+              </div>
+              <div class="hov-tile">
+                <span class="hov-label">Failure Risk</span>
+                <span class="hov-value"><span id="dashRisk">--</span><small>%</small></span>
+              </div>
+              <div class="hov-tile">
+                <span class="hov-label">Status</span>
+                <span class="hov-value hov-status" id="dashStatus">--</span>
+              </div>
+              <div class="hov-tile">
+                <span class="hov-label">Model Status</span>
+                <span class="hov-value hov-small" id="dashModelStatus">--</span>
+              </div>
+              <div class="hov-tile">
+                <span class="hov-label">Data Status</span>
+                <span class="hov-value hov-small" id="dashDataStatus">Simulated Telemetry</span>
+              </div>
+            </div>
+          </div>
+          <div class="hov-bar" role="img" aria-label="Machine health score bar"><div class="hov-bar-fill" id="dashHealthBar" style="width:100%"></div></div>
+        </div>
+        <div class="grid-kpi" id="kpiGrid" aria-label="Live KPI cards"></div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7 4"/></svg>
+              </div><h2 class="card-title">Model Consensus</h2></div>
+              <span class="dataset-pill" id="consensusCount">-- / 3</span>
+            </div>
+            <div class="consensus-list" id="consensusList"></div>
+            <div class="muted-note" id="consensusNote">Checking model availability&hellip;</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/></svg>
+              </div><h2 class="card-title">Failure Risk Trend</h2></div>
+              <span class="dataset-pill" id="dashTrendLabel">--</span>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="dashRiskTrend"></canvas></div>
+            <div class="muted-note">Risk (%) over recent pipeline runs. Startup state: no trend data yet.</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div><h2 class="card-title">Recent Alerts</h2></div>
+              <button class="card-action-btn" id="btnViewAllAlerts" type="button">Open Alert Center</button>
+            </div>
+            <div class="alert-feed" id="dashboardAlerts"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div><h2 class="card-title">Quick Actions</h2></div>
+            </div>
+            <div class="quick-actions">
+              <button class="qa-btn qa-ok" id="qaHealthy" type="button">Run Healthy Scenario</button>
+              <button class="qa-btn qa-crit" id="qaCritical" type="button">Run High-Risk Scenario</button>
+              <button class="qa-btn qa-demo" id="qaDemo" type="button">Start Demo Mode</button>
+              <button class="qa-btn" id="qaPredict" type="button">Open Prediction Console</button>
+              <button class="qa-btn" id="qaScenario" type="button">Open Scenario Lab</button>
+              <button class="qa-btn" id="qaExport" type="button">Open Export Center</button>
+            </div>
+            <div class="muted-note">Quick actions drive the same central pipeline as every other control in the app. All scenarios are simulations.</div>
+          </div>
+        </div>
+          <div class="card ev-card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              </div><h2 class="card-title">AI Event Stream</h2></div>
+              <span class="dataset-pill">REAL USER ACTIONS ONLY</span>
+            </div>
+            <div class="ev-list" id="evList" aria-live="polite">
+              <div class="ev-item"><span class="ev-time">--:--:--</span><span class="ev-pip"></span><span class="ev-msg">Waiting for the first action&hellip;</span></div>
+            </div>
+            <div class="muted-note">Every entry is triggered by something you did (view change, slider, scenario, prediction run, replay step). No synthetic AI chatter is generated.</div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-live" role="tabpanel" aria-label="Live Monitor">
+        <div class="view-head">
+          <div><h2 class="view-title">Live Machine Monitor</h2>
+          <span class="view-sub"><strong>SIMULATED TELEMETRY</strong> &middot; offline ML prototype (no live factory connection)</span></div>
+          <span class="dataset-pill pill-offline">OFFLINE SIMULATION</span>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div><h3 class="card-title">Telemetry Channels</h3></div>
+            <span class="dataset-pill" id="simStatePill">Simulation: OFF</span>
+          </div>
+          <div class="telemetry-rows" id="telemetryRows"></div>
+          <div class="muted-note">Trend and delta compare the current reading with the previous pipeline run. Channel status uses advisory (rule-based) bands.</div>
+        </div>
+        <div class="card chart-section">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div><h3 class="card-title">Sensor Dynamic Waveform</h3></div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color" style="background:#06b6d4;"></span><span>Speed (rpm / 30)</span></div>
+              <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span><span>Torque (Nm)</span></div>
+              <div class="legend-item"><span class="legend-color" style="background:#f43f5e;"></span><span>Failure Risk (%)</span></div>
+              <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span><span>Tool Wear (min / 3)</span></div>
+            </div>
+          </div>
+          <div class="canvas-wrapper"><canvas id="telemetryChart" width="1400" height="200"></canvas></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/></svg>
+              </div><h3 class="card-title">Failure Risk Trend</h3></div>
+              <span class="dataset-pill" id="liveTrendLabel">--</span>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="liveRiskTrend"></canvas></div>
+            <div class="muted-note">Risk (%) per recorded prediction event, produced by the real Random Forest. Startup state: run the simulation to generate trend data.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div><h3 class="card-title">Stream Controls</h3></div>
+            </div>
+            <div class="quick-actions">
+              <button class="qa-btn qa-ok" id="btnSimStart" type="button">Start Simulated Telemetry</button>
+              <button class="qa-btn" id="btnSimStop" type="button">Stop Stream</button>
+              <button class="qa-btn" id="btnSimTick" type="button">Advance One Reading</button>
+            </div>
+            <div class="muted-note">Stream interval, speed and noise level are configured in Settings. Simulated telemetry only &mdash; not live factory data.</div>
+          </div>
+        </div>
+        <div class="card logs-section">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div><h3 class="card-title">Telemetry Run Registry (click a row to load its telemetry state)</h3></div>
+            <span class="machine-id-label">Reference records</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="telemetry-table">
+              <thead><tr><th>Asset Tag</th><th>Variant</th><th>Air Temp</th><th>Process Temp</th><th>Speed</th><th>Torque</th><th>Tool Wear</th><th>Risk (RF)</th><th>Status</th><th>Advisory Indicators</th></tr></thead>
+              <tbody id="telemetryTableBody"></tbody>
+            </table>
+          </div>
+          <div class="muted-note">Risk scores are recomputed live by the real Random Forest from the stored reference telemetry. Indicator codes are advisory (documented AI4I references), not model outputs.</div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-prediction" role="tabpanel" aria-label="Prediction console">
+        <div class="view-head">
+          <div><h2 class="view-title">Prediction Console</h2>
+          <span class="view-sub">Adjust simulated sensor values and run the real Random Forest through the central pipeline</span></div>
+          <span class="dataset-pill pill-offline">SIMULATED INPUTS</span>
+        </div>
+        <section class="presets-section" aria-label="Operational presets">
+          <span class="presets-label">Operational Presets:</span>
+          <div class="presets-container" id="presetsList"></div>
+        </section>
+        <div class="dashboard-grid">
+          <section class="card controls-card" aria-labelledby="controlsHeading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <div class="card-title-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                </div>
+                <h2 id="controlsHeading" class="card-title">Sensor Telemetry Ingestion</h2>
+              </div>
+              <button id="btnResetDefaults" class="card-action-btn" type="button">Reset Baseline</button>
+            </div>
+            <div class="controls-list">
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label class="control-label">Product Variant Grade</label></div>
+                  <span class="control-val-badge" id="badgeProductType">Type M</span>
+                </div>
+                <div class="type-selector-group" role="radiogroup" aria-label="Product variant grade">
+                  <button type="button" class="type-btn" data-type="L" id="btnTypeL"><span>Type L (Low)</span><small>High Strain Risk</small></button>
+                  <button type="button" class="type-btn active" data-type="M" id="btnTypeM"><span>Type M (Med)</span><small>Balanced Grade</small></button>
+                  <button type="button" class="type-btn" data-type="H" id="btnTypeH"><span>Type H (High)</span><small>High Durability</small></button>
+                </div>
+              </div>
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label for="sliderAirTemp" class="control-label">Air Ambient Temperature</label></div>
+                  <span class="control-val-badge"><span id="valAirTemp">298.5</span> <span class="control-unit">K</span>
+                    <span id="valAirTempC" style="color:var(--text-dim);font-size:0.8rem;margin-left:4px;">(25.4°C)</span></span>
+                </div>
+                <div class="range-container"><input type="range" id="sliderAirTemp" class="slider-input" min="295.0" max="305.0" step="0.1" value="298.5" aria-label="Air ambient temperature"></div>
+                <div class="range-bounds"><span>295.0 K</span><span>305.0 K</span></div>
+                <div class="numeric-row">
+                  <label class="numeric-label" for="numAirTemp">Exact value</label>
+                  <input type="number" id="numAirTemp" class="numeric-input" min="295" max="305" step="0.1" value="298.5">
+                  <span class="numeric-unit">K</span>
+                </div>
+              </div>
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label for="sliderProcTemp" class="control-label">Process Cutting Temperature</label></div>
+                  <span class="control-val-badge"><span id="valProcTemp">308.8</span> <span class="control-unit">K</span>
+                    <span id="valProcTempC" style="color:var(--text-dim);font-size:0.8rem;margin-left:4px;">(35.7°C)</span></span>
+                </div>
+                <div class="range-container"><input type="range" id="sliderProcTemp" class="slider-input" min="305.0" max="315.0" step="0.1" value="308.8" aria-label="Process cutting temperature"></div>
+                <div class="range-bounds"><span>305.0 K</span><span>315.0 K</span></div>
+                <div class="numeric-row">
+                  <label class="numeric-label" for="numProcTemp">Exact value</label>
+                  <input type="number" id="numProcTemp" class="numeric-input" min="305" max="315" step="0.1" value="308.8">
+                  <span class="numeric-unit">K</span>
+                </div>
+              </div>
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label for="sliderSpeed" class="control-label">Spindle Rotational Speed</label></div>
+                  <span class="control-val-badge"><span id="valSpeed">1540</span> <span class="control-unit">rpm</span></span>
+                </div>
+                <div class="range-container"><input type="range" id="sliderSpeed" class="slider-input" min="1100" max="2900" step="5" value="1540" aria-label="Spindle rotational speed"></div>
+                <div class="range-bounds"><span>1100 rpm</span><span>2900 rpm</span></div>
+                <div class="numeric-row">
+                  <label class="numeric-label" for="numSpeed">Exact value</label>
+                  <input type="number" id="numSpeed" class="numeric-input" min="1100" max="2900" step="5" value="1540">
+                  <span class="numeric-unit">rpm</span>
+                </div>
+              </div>
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label for="sliderTorque" class="control-label">Spindle Torque Load</label></div>
+                  <span class="control-val-badge"><span id="valTorque">39.5</span> <span class="control-unit">Nm</span></span>
+                </div>
+                <div class="range-container"><input type="range" id="sliderTorque" class="slider-input" min="3.5" max="80.0" step="0.5" value="39.5" aria-label="Spindle torque load"></div>
+                <div class="range-bounds"><span>3.5 Nm</span><span>80.0 Nm</span></div>
+                <div class="numeric-row">
+                  <label class="numeric-label" for="numTorque">Exact value</label>
+                  <input type="number" id="numTorque" class="numeric-input" min="3.5" max="80" step="0.5" value="39.5">
+                  <span class="numeric-unit">Nm</span>
+                </div>
+              </div>
+              <div class="control-item">
+                <div class="control-header">
+                  <div class="control-label-wrapper"><label for="sliderWear" class="control-label">Tool Cumulative Wear</label></div>
+                  <span class="control-val-badge"><span id="valWear">85</span> <span class="control-unit">min</span></span>
+                </div>
+                <div class="range-container"><input type="range" id="sliderWear" class="slider-input" min="0" max="260" step="1" value="85" aria-label="Tool cumulative wear"></div>
+                <div class="range-bounds"><span>0 min</span><span>260 min</span></div>
+                <div class="numeric-row">
+                  <label class="numeric-label" for="numWear">Exact value</label>
+                  <input type="number" id="numWear" class="numeric-input" min="0" max="260" step="1" value="85">
+                  <span class="numeric-unit">min</span>
+                </div>
+              </div>
+              <button class="qa-btn qa-ok apply-btn" id="btnApplySensors" type="button">RUN PREDICTION</button>
+              <div class="muted-note" style="margin-top:8px;">Validates the six features, runs real Random Forest inference in your browser, classifies the risk level and appends the result to Prediction History.</div>
+            </div>
+          </section>
+          <section class="card prediction-overview-card status-optimal" id="predictionOverviewCard" aria-labelledby="predictionHeading">
+            <div class="card-glow-bg"></div>
+            <div class="card-header">
+              <div class="card-title-group">
+                <div class="card-title-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                <h2 id="predictionHeading" class="card-title">Real-Time Risk Diagnostic</h2>
+              </div>
+              <span class="dataset-pill" id="riskLevelTag">LOW RISK</span>
+            </div>
+            <div class="gauge-hero-section">
+              <div class="gauge-visual">
+                <svg class="gauge-svg" viewBox="0 0 160 160">
+                  <circle class="gauge-track" cx="80" cy="80" r="70"></circle>
+                  <circle id="gaugeFill" class="gauge-fill" cx="80" cy="80" r="70"></circle>
+                </svg>
+                <div class="gauge-content">
+                  <div class="gauge-percentage"><span id="riskPercentage">--</span><span class="gauge-percentage-symbol">%</span></div>
+                  <span class="gauge-label">Failure Risk &middot; Random Forest</span>
+                </div>
+              </div>
+              <div class="status-summary">
+                <div id="machineStatusBadge" class="status-badge">
+                  <span class="indicator-dot" style="background: currentColor;"></span>
+                  <span id="machineStatusText">--</span>
+                </div>
+                <div class="status-metrics-row">
+                  <div class="mini-metric-box"><div class="mini-metric-label">Asset Health</div><div class="mini-metric-value" id="healthIndexVal">-- / 100</div></div>
+                  <div class="mini-metric-box"><div class="mini-metric-label">Calculated Power</div><div class="mini-metric-value" id="metricPower">-- W</div></div>
+                  <div class="mini-metric-box"><div class="mini-metric-label">Thermal Delta (ΔT)</div><div class="mini-metric-value" id="metricTempDelta">-- K</div></div>
+                  <div class="mini-metric-box"><div class="mini-metric-label">Overstrain Metric</div><div class="mini-metric-value" id="metricOverstrain">-- min·Nm</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="muted-note" id="predStamp" style="margin-top:10px;">Prediction time: — · Primary model: Random Forest (300 trees) · Inference: browser-local</div>
+            <div class="modes-section">
+              <h3 class="modes-section-title">Failure Mode Attribution Spectrum <span class="mode-note-inline">advisory rule engine &mdash; NOT Random Forest output</span></h3>
+              <div class="modes-list">
+                <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">TWF</span><span>Tool Wear Indicator</span></div><span class="mode-level" id="lvlTWF">--</span><span class="mode-pct" id="pctTWF">--</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barTWF" style="width:0%"></div></div></div>
+                <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">HDF</span><span>Heat Dissipation Indicator</span></div><span class="mode-level" id="lvlHDF">--</span><span class="mode-pct" id="pctHDF">--</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barHDF" style="width:0%"></div></div></div>
+                <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">PWF</span><span>Power Indicator</span></div><span class="mode-level" id="lvlPWF">--</span><span class="mode-pct" id="pctPWF">--</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barPWF" style="width:0%"></div></div></div>
+                <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">OSF</span><span>Overstrain Indicator</span></div><span class="mode-level" id="lvlOSF">--</span><span class="mode-pct" id="pctOSF">--</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barOSF" style="width:0%"></div></div></div>
+                <div class="mode-bar-item"><div class="mode-bar-header"><div class="mode-title"><span class="mode-code">RNF</span><span>Random Failure Indicator</span></div><span class="mode-level" id="lvlRNF">--</span><span class="mode-pct" id="pctRNF">--</span></div><div class="mode-progress-track"><div class="mode-progress-bar" id="barRNF" style="width:0%"></div></div></div>
+              </div>
+              <div class="muted-note" id="indicatorNote">--</div>
+            </div>
+            <div class="prescriptions-section">
+              <h3 class="modes-section-title" style="margin-bottom:0.75rem;">Prescriptive Actions</h3>
+              <div class="prescriptions-container" id="prescriptionsList"></div>
+              <div class="muted-note">Recommendations are produced by this prototype's advisory rule engine and threshold checks &mdash; they are not model outputs, and this project contains no remaining-useful-life (RUL) model.</div>
+            </div>
+          </section>
+                </div>
+      </section>
+      <section class="view hidden" id="view-models" role="tabpanel" aria-label="Model laboratory">
+        <div class="view-head">
+          <div><h2 class="view-title">Model Laboratory</h2>
+          <span class="view-sub">Methodology and evaluation honesty — what this project really contains</span></div>
+          <span class="dataset-pill pill-offline">3 OF 3 MODELS LIVE</span>
+        </div>
+        <div class="card">
+          <div class="muted-note" style="margin-top:0">The training study compared three classifiers (Decision Tree, Random Forest, SVM-RBF) on the AI4I 2020 dataset. <strong>All three fitted models now run live in this browser</strong>: the Random Forest artifact ships with <code>model-data.js</code>, and the fitted Decision Tree and RBF-SVM (support vectors + scaler) ship with <code>model-artifacts.js</code>, both fitted by the reproducible <code>train-baselines.mjs</code> script. Every reading is scored by all three, and every metric shown is measured on a held-out split rather than copied from anywhere.</div>
+        </div>
+        <div class="models-grid">
+          <div class="card model-lab-card" id="labDT">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v6M12 9l-5 4M12 9l5 4M7 13v4M17 13v4"/></svg>
+              </div><h3 class="card-title">Decision Tree</h3></div>
+              <span class="model-status status-live" id="dtLive"><span class="sys-dot"></span> LIVE INFERENCE</span>
+            </div>
+            <div class="model-config">
+              <div class="cfg-row"><span class="cfg-key">Model</span><span class="cfg-val">CART &middot; Gini &middot; class_weight = "balanced"</span></div>
+              <div class="cfg-row"><span class="cfg-key">Metrics source</span><span class="cfg-val">Measured on a held-out 20% split by <code>train-baselines.mjs</code></span></div>
+              <div class="cfg-row"><span class="cfg-key">Class balance</span><span class="cfg-val">class_weight = "balanced"</span></div>
+              <div class="cfg-row"><span class="cfg-key">Search grid</span><span class="cfg-val">max_depth 3 / 5 / 7 / 10 &middot; min_samples_leaf 1 / 5 / 10 / 20</span></div>
+              <div class="cfg-row"><span class="cfg-key">Selection</span><span class="cfg-val">Stratified 5-fold CV, scored on ROC-AUC</span></div>
+              <div class="cfg-row"><span class="cfg-key">Artifact in this project</span><span class="cfg-val" id="dtArtifact">Fitted tree bundled in <code>model-artifacts.js</code></span></div>
+            </div>
+            <div class="metric-table">
+              <div class="metric-row"><span class="metric-name">F1 Score</span><span class="metric-val" id="dtF1">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Precision</span><span class="metric-val" id="dtPrec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Recall</span><span class="metric-val" id="dtRec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">ROC-AUC</span><span class="metric-val" id="dtAuc">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Live output (this session)</span><span class="metric-val metric-live" id="dtLiveOut">--</span></div>
+            </div>
+            <div class="muted-note" id="dtNote">Fitted in this project by <code>train-baselines.mjs</code> on the AI4I 2020 dataset (same features, same stratified split, same <code>class_weight="balanced"</code> rule as the study). Every value above is measured on data the tree never saw.</div>
+          </div>
+          <div class="card model-lab-card model-live-card" id="labRF">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22v-7M12 15 7 9M12 15l5-6M5 9V5M19 9V5M7 9H3M17 9h4"/></svg>
+              </div><h3 class="card-title">Random Forest</h3></div>
+              <span class="model-status status-live" id="rfLive"><span class="sys-dot"></span> LIVE INFERENCE</span>
+            </div>
+            <div class="model-config">
+              <div class="cfg-row"><span class="cfg-key">Model</span><span class="cfg-val">RandomForestClassifier &middot; 300 trees</span></div>
+              <div class="cfg-row"><span class="cfg-key">Metrics source</span><span class="cfg-val">Training benchmark + live browser inference</span></div>
+              <div class="cfg-row"><span class="cfg-key">Class balance</span><span class="cfg-val">class_weight = "balanced"</span></div>
+              <div class="cfg-row"><span class="cfg-key">Search grid</span><span class="cfg-val">n_estimators 100 / 300 &middot; max_depth 8 / 12 / None &middot; min_samples_leaf 1 / 3</span></div>
+              <div class="cfg-row"><span class="cfg-key">Selection</span><span class="cfg-val">Stratified 5-fold GridSearchCV, scoring = F1</span></div>
+              <div class="cfg-row"><span class="cfg-key">Artifact in this project</span><span class="cfg-val">Full serialized forest (model-data.js)</span></div>
+            </div>
+            <div class="metric-table">
+              <div class="metric-row"><span class="metric-name">F1 Score (test set)</span><span class="metric-val metric-doc" id="rfF1">0.691</span></div>
+              <div class="metric-row"><span class="metric-name">ROC-AUC (test set)</span><span class="metric-val metric-doc" id="rfAuc">0.969</span></div>
+              <div class="metric-row"><span class="metric-name">Precision</span><span class="metric-val" id="rfPrec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Recall</span><span class="metric-val" id="rfRec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Live output (this session)</span><span class="metric-val metric-live" id="rfLiveOut">--</span></div>
+            </div>
+            <div class="muted-note" id="rfNote">F1 and ROC-AUC are the documented benchmark values from the training study's saved notes. Precision/recall/confusion matrix were computed by the study script but not saved to the project outputs, so they stay N/A. Every number rendered as "Live output" is real browser inference from the bundled forest.</div>
+          </div>
+          <div class="card model-lab-card" id="labSVM">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 4 4-7"/></svg>
+              </div><h3 class="card-title">SVM (RBF)</h3></div>
+              <span class="model-status status-live" id="svmLive"><span class="sys-dot"></span> LIVE INFERENCE</span>
+            </div>
+            <div class="model-config">
+              <div class="cfg-row"><span class="cfg-key">Pipeline</span><span class="cfg-val">StandardScaler &rarr; RBF SVC, solved with SMO</span></div>
+              <div class="cfg-row"><span class="cfg-key">Metrics source</span><span class="cfg-val">Measured on a held-out 20% split by <code>train-baselines.mjs</code></span></div>
+              <div class="cfg-row"><span class="cfg-key">Class balance</span><span class="cfg-val">class_weight = "balanced"</span></div>
+              <div class="cfg-row"><span class="cfg-key">Search grid</span><span class="cfg-val">C 1 / 10 / 100 / 1000 &middot; gamma "scale" / 0.2 / 0.05 / 0.01</span></div>
+              <div class="cfg-row"><span class="cfg-key">Selection</span><span class="cfg-val">Stratified 3-fold CV, scored on ROC-AUC</span></div>
+              <div class="cfg-row"><span class="cfg-key">Artifact in this project</span><span class="cfg-val" id="svmArtifact">Support vectors + fitted scaler in <code>model-artifacts.js</code></span></div>
+            </div>
+            <div class="metric-table">
+              <div class="metric-row"><span class="metric-name">F1 Score</span><span class="metric-val" id="svmF1">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Precision</span><span class="metric-val" id="svmPrec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Recall</span><span class="metric-val" id="svmRec">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">ROC-AUC</span><span class="metric-val" id="svmAuc">N/A</span></div>
+              <div class="metric-row"><span class="metric-name">Live output (this session)</span><span class="metric-val metric-live" id="svmLiveOut">--</span></div>
+            </div>
+            <div class="muted-note" id="svmNote">Fitted in this project by <code>train-baselines.mjs</code> (Platt sigmoid probabilities, calibrated against the real 3.39% base rate). It is a genuine kernel model, but it is the weakest of the three on this dataset — reported as measured, not tuned to look better.</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card cb-card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              </div><h3 class="card-title">Class Balance (training dataset)</h3></div>
+              <span class="dataset-pill" id="cbPill">AI4I 2020</span>
+            </div>
+            <div class="class-balance-wrap">
+              <div class="donut-wrap"><canvas id="classBalanceChart"></canvas></div>
+              <div class="cb-legend">
+                <div class="cb-item"><span class="legend-color" style="background:#10b981;"></span><div><span class="cb-title">Normal operation</span><span class="cb-value" id="cbNormal">--</span></div></div>
+                <div class="cb-item"><span class="legend-color" style="background:#f43f5e;"></span><div><span class="cb-title">Recorded failures</span><span class="cb-value" id="cbFail">--</span></div></div>
+                <div class="cb-item"><span class="legend-color" style="background:#f59e0b;"></span><div><span class="cb-title">Failure rate</span><span class="cb-value" id="cbRate">--</span></div></div>
+                <div class="cb-note" id="cbNote">Severe class imbalance is why F1 was chosen as the tuning metric and class_weight="balanced" was applied to all three models.</div>
+              </div>
+            </div>
+            <div class="cb-imbalance" id="cbImbalance">
+              <div class="cb-why-title">How this project handles the imbalance</div>
+              <div class="cfg-row"><span class="cfg-key">Train / test split</span><span class="cfg-val" id="cbSplit">--</span></div>
+              <div class="cfg-row"><span class="cfg-key">Cross-validation</span><span class="cfg-val" id="cbCv">--</span></div>
+              <div class="cfg-row"><span class="cfg-key">Tuning metric</span><span class="cfg-val" id="cbScoring">--</span></div>
+              <div class="cfg-row"><span class="cfg-key">Class weighting</span><span class="cfg-val" id="cbImb">--</span></div>
+              <div class="cb-tradeoff-title">Measured trade-off on the held-out test split</div>
+              <div class="cb-tradeoff-head"><span>Model</span><span>Precision</span><span>Recall</span><span>F1</span></div>
+              <div class="cb-tradeoff-row" data-cb-m="dt"><span>Decision Tree</span><span data-cb="precision">--</span><span data-cb="recall">--</span><span data-cb="f1">--</span></div>
+              <div class="cb-tradeoff-row" data-cb-m="rf"><span>Random Forest</span><span data-cb="precision">--</span><span data-cb="recall">--</span><span data-cb="f1">--</span></div>
+              <div class="cb-tradeoff-row" data-cb-m="svm"><span>SVM (RBF)</span><span data-cb="precision">--</span><span data-cb="recall">--</span><span data-cb="f1">--</span></div>
+              <div class="muted-note" id="cbTradeNote">Values are read from the saved model metrics. Any metric the project did not measure is shown as N/A rather than estimated.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+              </div><h3 class="card-title">Evaluation Snapshot</h3></div>
+              <span class="dataset-pill">DOCUMENTED VALUES ONLY</span>
+            </div>
+            <div class="chart-block"><span class="chart-caption">F1 Score by model (test set)</span>
+              <div class="canvas-wrapper short"><canvas id="chartF1"></canvas></div></div>
+            <div class="chart-block"><span class="chart-caption">ROC-AUC by model (test set)</span>
+              <div class="canvas-wrapper short"><canvas id="chartROC"></canvas></div></div>
+            <div class="chart-block"><span class="chart-caption">Precision vs Recall &mdash; Random Forest</span>
+              <div class="canvas-wrapper short"><canvas id="chartPR"></canvas></div></div>
+            <div class="muted-note" id="cmpNote">Charts render only values saved in the project. Missing values are drawn as "N/A" placeholders by design.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+            </div><h3 class="card-title">Full Metric Table</h3></div>
+            <span class="dataset-pill">N/A = NOT DOCUMENTED</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="telemetry-table">
+              <thead><tr><th>Model</th><th>F1 Score</th><th>Precision</th><th>Recall</th><th>ROC-AUC</th><th>Live inference</th><th>Artifact</th></tr></thead>
+              <tbody id="cmpTableBody"></tbody>
+            </table>
+          </div>
+          <div class="muted-note" id="metricsFootnote">Cell values come from the training study's documented outputs. "N/A" means the value was not saved in this project — it is not zero and it is not estimated.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </div><h3 class="card-title">Confusion Matrix</h3></div>
+            <div class="segmented" id="cmSelector" role="group" aria-label="Select model for confusion matrix">
+              <button class="seg-btn active" data-model="dt" type="button">Decision Tree</button>
+              <button class="seg-btn" data-model="rf" type="button">Random Forest</button>
+              <button class="seg-btn" data-model="svm" type="button">SVM (RBF)</button>
+            </div>
+          </div>
+          <div id="cmHost"><div class="na-panel">Loading confusion matrix…</div></div>
+          <div class="muted-note" id="cmNote">The Decision Tree and SVM matrices are real, measured on a held-out 20% split by <code>train-baselines.mjs</code> &mdash; switch models with the buttons above. The Random Forest still has no saved matrix from the original study, so it honestly stays N/A.</div>
+        </div>
+      </section>
+<section class="view hidden" id="view-xai" role="tabpanel" aria-label="Explainable AI Intelligence Center">
+        <div class="view-head">
+          <div><h2 class="view-title">Explainable AI Intelligence Center</h2>
+          <span class="view-sub">Every value on this page is read from the fitted artifacts &mdash; Decision Tree path, Random Forest split structure, SVM decision score. Nothing is estimated or invented.</span></div>
+          <span class="dataset-pill pill-offline" id="xaHeadPill">ARTIFACT-BACKED</span>
+        </div>
+
+        <div class="card xa-hero">
+          <div class="xa-hero-main">
+            <div class="xa-kicker">AI DECISION EXPLANATION</div>
+            <div class="xa-machine-line">CURRENT MACHINE <b id="xaMachine">CNC-MILL-08</b></div>
+            <div class="xa-hero-risk">
+              <div class="xa-hero-num"><b id="xaRiskVal">--</b><span>%</span></div>
+              <div class="xa-hero-meta">
+                <div class="xa-hero-level" id="xaRiskLevelBox"><span class="xa-ico" id="xaRiskIco" aria-hidden="true">&#9679;</span><b id="xaRiskLevelTxt">--</b></div>
+                <div class="xa-hero-model">MODEL <b id="xaModelName">Random Forest</b></div>
+                <div class="xa-hero-sub" id="xaRiskSub">failure probability reported by the selected model</div>
+              </div>
+            </div>
+            <div class="xa-hero-actions">
+              <button id="xaWhyBtn" class="ai-btn primary" type="button" title="Open the explanation panel">&#63; WHY?</button>
+              <button id="xaModeBtn" class="ai-btn" type="button" title="Dim the interface and enlarge the explanation">EXPLANATION MODE</button>
+              <button id="xaExportBtn" class="ai-btn" type="button" title="Download the Explainable AI report">EXPORT REPORT</button>
+            </div>
+          </div>
+          <div class="xa-hero-why">
+            <div class="xa-why-head">WHY? <span class="xa-why-model" id="xaWhyModelTag">Random Forest</span></div>
+            <div class="xa-why-list" id="xaWhyList"></div>
+            <div class="xa-why-foot" id="xaWhyFoot"></div>
+          </div>
+        </div>
+
+        <div class="card xa-selector">
+          <div class="xa-sel-label">EXPLAIN MODEL</div>
+          <div class="xa-sel-btns" id="xaSelBtns">
+            <button class="xa-sel-btn active" data-model="rf" type="button" aria-pressed="true">
+              <span class="xa-sel-ico" aria-hidden="true">&#9673;</span><b>Random Forest</b><small id="xaSelCapRf">300 fitted trees</small></button>
+            <button class="xa-sel-btn" data-model="dt" type="button" aria-pressed="false">
+              <span class="xa-sel-ico" aria-hidden="true">&#9651;</span><b>Decision Tree</b><small id="xaSelCapDt">fitted CART tree</small></button>
+            <button class="xa-sel-btn" data-model="svm" type="button" aria-pressed="false">
+              <span class="xa-sel-ico" aria-hidden="true">&#9670;</span><b>SVM (RBF)</b><small id="xaSelCapSvm">1900 support vectors</small></button>
+          </div>
+          <div class="xa-sel-note" id="xaSelNote"></div>
+        </div>
+
+        <div class="xa-grid">
+          <div class="card xa-impact-card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              </div><h3 class="card-title" id="xaImpactTitle">Model Split Usage</h3></div>
+              <span class="dataset-pill" id="xaImpactPill">RELATIVE</span>
+            </div>
+            <div class="xa-method" id="xaMethodNote"></div>
+            <div class="xa-bars" id="xaImpactBody"></div>
+            <div class="muted-note" id="xaImpactNote"></div>
+          </div>
+
+          <div class="card xa-explain-card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div><h3 class="card-title" id="xaExplainTitle">Decision Path</h3></div>
+              <span class="dataset-pill" id="xaExplainPill">&mdash;</span>
+            </div>
+            <div class="xa-explain-body" id="xaExplainBody"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/></svg>
+            </div><h3 class="card-title">Feature Inspector</h3></div>
+            <span class="dataset-pill">SELECT A FEATURE</span>
+          </div>
+          <div class="xa-feat-grid" id="xaFeatGrid"></div>
+          <div class="muted-note">Selecting a feature opens its detail panel and highlights the matching conceptual component on the digital twin. The mapping is illustrative only &mdash; the models do not localise faults physically.</div>
+        </div>
+<div class="xa-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6h-6"/></svg>
+              </div><h3 class="card-title">Why Did Risk Change?</h3></div>
+              <span class="dataset-pill" id="xaComparePill">BASELINE</span>
+            </div>
+            <div id="xaCompare"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              </div><h3 class="card-title">How Models See The Machine</h3></div>
+              <span class="dataset-pill">AVAILABILITY</span>
+            </div>
+            <div id="xaCompareModels"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h4M15 12h4M12 5v4M12 15v4"/><circle cx="12" cy="12" r="3"/></svg>
+            </div><h3 class="card-title">AI Explanation Flow</h3></div>
+            <span class="dataset-pill">ANIMATION IS ILLUSTRATIVE</span>
+          </div>
+          <div class="xa-flow" id="xaFlow"></div>
+          <div class="muted-note">The flow animates to show the order of operations. Only the numeric results are computed; the animation carries no data.</div>
+        </div>
+
+        <div class="xa-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h3"/></svg>
+              </div><h3 class="card-title">AI Decision Summary</h3></div>
+              <span class="dataset-pill" id="xaSummaryModel">RANDOM FOREST</span>
+            </div>
+            <div id="xaSummary"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z"/></svg>
+              </div><h3 class="card-title">AI Maintenance Advisory</h3></div>
+              <span class="dataset-pill">ADVISORY ONLY</span>
+            </div>
+            <div id="xaAdvisory"></div>
+          </div>
+        </div>
+
+        <div class="xa-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div><h3 class="card-title">Explanation History</h3></div>
+              <span class="dataset-pill" id="xaHistPill">SESSION ONLY</span>
+            </div>
+            <div id="xaHistory"></div>
+          </div>
+
+          <div class="card xa-about">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div><h3 class="card-title">About This Explanation</h3></div>
+              <span class="dataset-pill pill-offline">LIMITATIONS</span>
+            </div>
+            <div class="xa-about-body">
+              <p><strong>What you are looking at</strong> is model-supported feature importance and decision information read directly from the fitted artifacts in this project. It does <strong>not</strong> establish physical causation.</p>
+              <ul class="xa-about-list">
+                <li><b>Not SHAP.</b> No Shapley values are computed anywhere in this application. The ablation figures come from re-running the real forest with one feature held at the nominal baseline.</li>
+                <li><b>No RUL.</b> These are binary classifiers (failure / no failure). There is no remaining-useful-life model, so no life estimate is shown.</li>
+                <li><b>No failure mode prediction.</b> The models do not predict TWF / HDF / PWF / OSF / RNF. The five failure-mode indicators elsewhere in this app are a documented rule engine, not model output.</li>
+                <li><b>SVM has no feature weights.</b> An RBF kernel has no per-feature coefficient vector, so no feature importance can be shown for it. Its explanation is limited to the decision score and its most influential support vectors.</li>
+                <li><b>Relative, not causal.</b> Bar lengths are relative model importance. A high bar means the model relies on that feature, not that the feature causes a failure.</li>
+                <li><b>Academic prototype.</b> Simulation ranges are visualisation limits, not industrial safety limits.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-analytics" role="tabpanel" aria-label="Analytics">
+        <div class="view-head">
+          <div><h2 class="view-title">Session Analytics</h2>
+          <span class="view-sub">Aggregated from recorded pipeline events — every event was a real Random Forest inference</span></div>
+          <span class="dataset-pill pill-offline">SESSION DATA</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-tile"><span class="stat-label">Recorded predictions</span><span class="stat-value" id="anTotal">0</span></div>
+          <div class="stat-tile st-ok"><span class="stat-label">Normal</span><span class="stat-value" id="anNormal">0</span></div>
+          <div class="stat-tile st-warn"><span class="stat-label">Warning</span><span class="stat-value" id="anWarning">0</span></div>
+          <div class="stat-tile st-crit"><span class="stat-label">Critical</span><span class="stat-value" id="anCritical">0</span></div>
+          <div class="stat-tile"><span class="stat-label">Average risk</span><span class="stat-value" id="anAvgRisk">--</span></div>
+          <div class="stat-tile"><span class="stat-label">Peak risk</span><span class="stat-value" id="anMaxRisk">--</span></div>
+          <div class="stat-tile"><span class="stat-label">Current health</span><span class="stat-value" id="anHealth">--</span></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+              </div><h3 class="card-title">Risk Distribution</h3></div>
+              <span class="dataset-pill">HISTOGRAM</span>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="chartRiskDist"></canvas></div>
+            <div class="muted-note">Distribution of recorded failure-risk percentages across the whole session.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v10l7 4"/></svg>
+              </div><h3 class="card-title">Status Distribution</h3></div>
+              <span class="dataset-pill">BY THRESHOLDS</span>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="chartStatusDist"></canvas></div>
+            <div class="muted-note" id="anThresholdNote">Thresholds: warning ≥ --% · critical ≥ --% (configurable in Settings).</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div><h3 class="card-title">Sensor Trends (session)</h3></div>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background:#06b6d4;"></span><span>Torque</span></div>
+                <div class="legend-item"><span class="legend-color" style="background:#f43f5e;"></span><span>Tool Wear</span></div>
+                <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span><span>Risk %</span></div>
+              </div>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="chartSensorTrend"></canvas></div>
+            <div class="muted-note">Risk (%) plus tool wear and torque across recorded events — useful for spotting degradation patterns.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+              </div><h3 class="card-title">Predictions over Time</h3></div>
+              <span class="dataset-pill" id="anSpanPill">SESSION</span>
+            </div>
+            <div class="canvas-wrapper short"><canvas id="chartPredTime"></canvas></div>
+            <div class="muted-note" id="anEmptyNote">Startup state: no recorded events yet. Run a scenario, the telemetry simulation or a preset — each event is recorded honestly.</div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-history" role="tabpanel" aria-label="Prediction history">
+        <div class="view-head">
+          <div><h2 class="view-title">Prediction History</h2>
+          <span class="view-sub">Every recorded event was scored by the real Random Forest — capped at the 500 most recent</span></div>
+          <span class="dataset-pill pill-offline" id="storagePill">LOCAL STORAGE</span>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div><h3 class="card-title">Recorded Events</h3></div>
+            <div class="toolbar">
+              <input type="search" id="histSearch" class="toolbar-input" placeholder="Filter by machine, time or source…" aria-label="Filter history">
+              <select id="histFilter" class="toolbar-select" aria-label="Filter by status">
+                <option value="all">All statuses</option>
+                <option value="NORMAL">Normal</option>
+                <option value="WARNING">Warning</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+              <select id="histSort" class="toolbar-select" aria-label="Sort history">
+                <option value="newest">Sort: Newest first</option>
+                <option value="oldest">Sort: Oldest first</option>
+                <option value="riskDesc">Sort: Highest risk</option>
+                <option value="riskAsc">Sort: Lowest risk</option>
+                <option value="machine">Sort: Machine A→Z</option>
+              </select>
+              <button class="card-action-btn" id="btnHistClear" type="button">Clear history</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="telemetry-table">
+              <thead><tr><th>#</th><th>Time</th><th>Machine</th><th>Type</th><th>Air (K)</th><th>Proc (K)</th><th>RPM</th><th>Torque (Nm)</th><th>Wear (min)</th><th>Risk</th><th>Status</th><th>Source</th><th>Model</th></tr></thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+          <div class="muted-note" id="histCount">No events recorded yet.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div><h3 class="card-title">Export Center</h3></div>
+            <span class="dataset-pill">SESSION DATA ONLY</span>
+          </div>
+          <div class="export-grid">
+            <button class="qa-btn" id="btnExpPredictions" type="button">Export Prediction CSV</button>
+            <button class="qa-btn" id="btnExpTelemetry" type="button">Export Telemetry CSV</button>
+            <button class="qa-btn" id="btnExpHistory" type="button">Export History CSV</button>
+            <button class="qa-btn" id="btnExpMetrics" type="button">Export Model Metrics</button>
+            <button class="qa-btn qa-demo" id="btnGenReport" type="button">Generate Machine Report</button>
+            <button class="qa-btn" id="btnPrintReport" type="button">Print Report</button>
+          </div>
+          <div class="muted-note" id="exportNote">Startup state: nothing to export yet — run a prediction first.</div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-dataset" role="tabpanel" aria-label="Dataset explorer">
+        <div class="view-head">
+          <div><h2 class="view-title">Dataset Explorer</h2>
+          <span class="view-sub">AI4I 2020 Predictive Maintenance Dataset — schema, split and leakage control</span></div>
+          <span class="dataset-pill">AI4I-2020</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-tile"><span class="stat-label">Records</span><span class="stat-value" id="dsRecords">--</span></div>
+          <div class="stat-tile st-crit"><span class="stat-label">Recorded failures</span><span class="stat-value" id="dsFailures">--</span></div>
+          <div class="stat-tile st-warn"><span class="stat-label">Failure rate</span><span class="stat-value" id="dsRate">--</span></div>
+          <div class="stat-tile"><span class="stat-label">Missing values</span><span class="stat-value" id="dsMissing">--</span></div>
+          <div class="stat-tile"><span class="stat-label">Input features</span><span class="stat-value" id="dsFeatures">--</span></div>
+          <div class="stat-tile"><span class="stat-label">Target</span><span class="stat-value" id="dsTarget">--</span></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              </div><h3 class="card-title">Class Imbalance</h3></div>
+              <span class="dataset-pill" id="dsBalancePill">--</span>
+            </div>
+            <div class="cb-mini" aria-hidden="true"><div class="cb-mini-normal" id="dsBarNormal" style="width:96.6%"></div><div class="cb-mini-fail" id="dsBarFail" style="width:3.4%"></div></div>
+            <div class="muted-note" id="dsImbalanceNote">--</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>
+              </div><h3 class="card-title">Feature Schema</h3></div>
+              <span class="dataset-pill">TYPES &amp; RANGES</span>
+            </div>
+            <div class="table-wrapper">
+              <table class="telemetry-table">
+                <thead><tr><th>Feature</th><th>Role</th><th>Range / values</th></tr></thead>
+                <tbody id="dsSchemaBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div><h3 class="card-title">Preprocessing, Split &amp; Leakage Control</h3></div>
+            <span class="dataset-pill">TRANSPARENCY</span>
+          </div>
+          <div class="prep-flow">
+            <div class="prep-step"><span class="prep-num">1</span><span class="prep-title">Load CSV</span><span class="prep-desc">ai4i2020.csv, utf-8-sig encoded, 10,000 rows, 0 missing values</span></div>
+            <div class="prep-step"><span class="prep-num">2</span><span class="prep-title">Encode</span><span class="prep-desc">Type one-hot encoded → Type_H / Type_L / Type_M</span></div>
+            <div class="prep-step"><span class="prep-num">3</span><span class="prep-title">Drop leakage</span><span class="prep-desc">FailureType excluded — it is derived from the label</span></div>
+            <div class="prep-step"><span class="prep-num">4</span><span class="prep-title">Split</span><span class="prep-desc">80 / 20 stratified, random_state = 42</span></div>
+            <div class="prep-step"><span class="prep-num">5</span><span class="prep-title">Balance</span><span class="prep-desc">class_weight = "balanced" for all three models</span></div>
+            <div class="prep-step"><span class="prep-num">6</span><span class="prep-title">Scale (SVM)</span><span class="prep-desc">StandardScaler inside the SVM pipeline only</span></div>
+            <div class="prep-step"><span class="prep-num">7</span><span class="prep-title">Tune</span><span class="prep-desc">Stratified 5-fold GridSearchCV, scoring = F1</span></div>
+          </div>
+          <div class="muted-note">The deployed Random Forest expects the same 8-column layout that the browser builds: AirTemp, ProcTemp, RPM, Torque, ToolWear plus the three one-hot Type columns.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div><h3 class="card-title">Dataset Preview (optional)</h3></div>
+            <span class="dataset-pill">LOCAL FILE ONLY</span>
+          </div>
+          <div class="dataset-loader">
+            <label class="file-label" for="datasetFileInput">Load ai4i2020.csv from your computer</label>
+            <input type="file" id="datasetFileInput" class="file-input" accept=".csv,text/csv">
+            <span class="file-name" id="datasetFileName">No file loaded</span>
+          </div>
+          <div class="muted-note" id="datasetFallbackNote">No dataset file is bundled with this project, so this panel stays empty until you load ai4i2020.csv yourself. Nothing is uploaded anywhere — the file is parsed locally in your browser and discarded when you close the page.</div>
+          <div id="datasetLoaded" class="hidden">
+            <div class="stats-grid" id="dsLoadedStats"></div>
+            <div class="charts-grid">
+              <div class="mini-chart"><span class="chart-caption">Air temperature (K)</span><div class="canvas-wrapper short"><canvas id="dsChartAir"></canvas></div></div>
+              <div class="mini-chart"><span class="chart-caption">Process temperature (K)</span><div class="canvas-wrapper short"><canvas id="dsChartProc"></canvas></div></div>
+              <div class="mini-chart"><span class="chart-caption">Rotational speed (rpm)</span><div class="canvas-wrapper short"><canvas id="dsChartRpm"></canvas></div></div>
+              <div class="mini-chart"><span class="chart-caption">Torque (Nm)</span><div class="canvas-wrapper short"><canvas id="dsChartTorque"></canvas></div></div>
+              <div class="mini-chart"><span class="chart-caption">Tool wear (min)</span><div class="canvas-wrapper short"><canvas id="dsChartWear"></canvas></div></div>
+              <div class="mini-chart"><span class="chart-caption">Failure class counts</span><div class="canvas-wrapper short"><canvas id="dsChartFail"></canvas></div></div>
+            </div>
+            <div class="table-wrapper" style="margin-top:14px;">
+              <table class="telemetry-table">
+                <thead><tr id="dsPreviewHead"></tr></thead>
+                <tbody id="dsPreviewBody"></tbody>
+              </table>
+            </div>
+            <div class="muted-note" id="dsPreviewNote">--</div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-scenarios" role="tabpanel" aria-label="Scenario lab">
+        <div class="view-head">
+          <div><h2 class="view-title">Scenario Lab</h2>
+          <span class="view-sub">Simulated operating scenarios &mdash; the Random Forest scores whatever you run</span></div>
+          <span class="dataset-pill pill-offline">SIMULATION</span>
+        </div>
+        <div class="card replay-card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div><h3 class="card-title">Scenario Replay</h3></div>
+            <span class="dataset-pill">LIVE RF INFERENCE AT EVERY STEP</span>
+          </div>
+          <div class="replay-track" id="replayTrack">
+            <div class="rp-step" data-step="0"><span class="rp-dot"></span><span class="rp-name">NORMAL</span><span class="rp-risk" id="rpRisk0">--</span></div>
+            <div class="rp-step" data-step="1"><span class="rp-dot"></span><span class="rp-name">TORQUE RISE</span><span class="rp-risk" id="rpRisk1">--</span></div>
+            <div class="rp-step" data-step="2"><span class="rp-dot"></span><span class="rp-name">TOOL WEAR RISE</span><span class="rp-risk" id="rpRisk2">--</span></div>
+            <div class="rp-step" data-step="3"><span class="rp-dot"></span><span class="rp-name">TEMPERATURE RISE</span><span class="rp-risk" id="rpRisk3">--</span></div>
+            <div class="rp-step" data-step="4"><span class="rp-dot"></span><span class="rp-name">RISK INCREASE</span><span class="rp-risk" id="rpRisk4">--</span></div>
+          </div>
+          <div class="replay-controls">
+            <button id="btnReplayPlay" class="cam-btn" type="button">&#9654; PLAY</button>
+            <button id="btnReplayPause" class="cam-btn" type="button">&#10074;&#10074; PAUSE</button>
+            <button id="btnReplayReset" class="cam-btn" type="button">&#8635; RESET</button>
+            <span class="replay-note" id="replayNote">Idle &mdash; press PLAY to run the sequence.</span>
+          </div>
+          <div class="muted-note">Each step writes simulated sensor values into the same central pipeline and is scored live by the bundled Random Forest. The percentages on the timeline are real inference outputs, never scripted numbers. Advisory advisories remain rule-based.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div><h3 class="card-title">Operating Scenarios</h3></div>
+            <span class="dataset-pill" id="scenarioCount">-- scenarios</span>
+          </div>
+          <div class="scenario-grid" id="scenarioCards"></div>
+          <div class="muted-note">"Reference" values were measured against the bundled forest when these scenarios were designed. The value you see after running a scenario is always recomputed live &mdash; if it differs slightly, trust the live value.</div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+              </div><h3 class="card-title">Custom Sensor Simulator</h3></div>
+              <span class="dataset-pill">YOUR VALUES</span>
+            </div>
+            <div class="custom-grid">
+              <div class="custom-field">
+                <label class="numeric-label" for="cType">Product variant</label>
+                <select id="cType" class="toolbar-select">
+                  <option value="L">Type L (Low)</option>
+                  <option value="M" selected>Type M (Medium)</option>
+                  <option value="H">Type H (High)</option>
+                </select>
+              </div>
+              <div class="custom-field"><label class="numeric-label" for="cAir">Air temp (295&ndash;305 K)</label>
+                <input type="number" id="cAir" class="numeric-input" min="295" max="305" step="0.1" value="298.5"></div>
+              <div class="custom-field"><label class="numeric-label" for="cProc">Process temp (305&ndash;315 K)</label>
+                <input type="number" id="cProc" class="numeric-input" min="305" max="315" step="0.1" value="308.8"></div>
+              <div class="custom-field"><label class="numeric-label" for="cRpm">Speed (1100&ndash;2900 rpm)</label>
+                <input type="number" id="cRpm" class="numeric-input" min="1100" max="2900" step="5" value="1540"></div>
+              <div class="custom-field"><label class="numeric-label" for="cTorque">Torque (3.5&ndash;80 Nm)</label>
+                <input type="number" id="cTorque" class="numeric-input" min="3.5" max="80" step="0.5" value="39.5"></div>
+              <div class="custom-field"><label class="numeric-label" for="cWear">Tool wear (0&ndash;260 min)</label>
+                <input type="number" id="cWear" class="numeric-input" min="0" max="260" step="1" value="85"></div>
+            </div>
+            <div class="quick-actions" style="margin-top:14px;">
+              <button class="qa-btn qa-ok" id="btnCustomApply" type="button">Apply Custom Scenario</button>
+              <button class="qa-btn" id="btnCustomFillCurrent" type="button">Copy Current Reading Into Grid</button>
+              <button class="qa-btn qa-demo" id="btnWhatIf" type="button">Compare Scenarios (What-If)</button>
+            </div>
+            <div class="whatif-result" id="whatIfResult">
+              <div class="whatif-empty">Set the grid above, then press <strong>Compare Scenarios</strong> to score BOTH operating points with the real Random Forest — current state vs modified state, side by side.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div><h3 class="card-title">Current Scenario</h3></div>
+              <span class="dataset-pill" id="scenarioStatePill">IDLE</span>
+            </div>
+            <div class="scenario-current" id="scenarioCurrent">No scenario has been run yet. Pick a card above, or build a custom scenario, and the result will appear here — scored live by the Random Forest.</div>
+            <div class="quick-actions" style="margin-top:14px;">
+              <button class="qa-btn qa-ok" id="btnScenarioRun" type="button">Run Selected Scenario</button>
+              <button class="qa-btn" id="btnScenarioReset" type="button">Reset to Baseline</button>
+            </div>
+            <div class="muted-note">Scenarios change simulated sensor values only. The prediction pipeline, thresholds and alerts stay exactly the same as everywhere else in this app.</div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-whatif" role="tabpanel" aria-label="Scenario Lab what-if intelligence">
+        <div class="view-head">
+          <div><h2 class="view-title">Scenario Lab</h2>
+          <span class="view-sub">What-If Machine Intelligence &mdash; change the operating point, then score it with the same fitted models</span></div>
+          <div class="wi-head-right">
+            <span class="dataset-pill pill-offline">OFFLINE ML PROTOTYPE &middot; AI4I-2020</span>
+            <span class="dataset-pill" id="wiStatePill">IDLE</span>
+          </div>
+        </div>
+
+        <div class="wi-actionbar">
+          <div class="wi-namefield">
+            <label class="numeric-label" for="wiName">Scenario name <span class="muted-note">(optional)</span></label>
+            <input type="text" id="wiName" class="text-input wi-name" maxlength="48" placeholder="High Torque + Tool Wear">
+          </div>
+          <div class="wi-actions">
+            <label class="wi-toggle"><input type="checkbox" id="wiAuto"> <span>AUTO ANALYZE</span></label>
+            <button class="qa-btn" id="btnWiExport" type="button">EXPORT</button>
+            <button class="qa-btn" id="btnWiReset" type="button">RESET SCENARIO</button>
+            <button class="qa-btn qa-demo wi-run" id="btnWiRun" type="button">RUN WHAT-IF ANALYSIS</button>
+          </div>
+        </div>
+        <div class="wi-validation" id="wiValidation" role="status"></div>
+
+        <div class="wi-presets">
+          <span class="wi-presets-label">SCENARIO PRESETS</span>
+          <div class="wi-preset-wrap" id="wiPresets"></div>
+          <span class="muted-note wi-preset-note">A preset only sets the input features. Press RUN to score it with the real models.</span>
+        </div>
+
+        <div class="wi-grid">
+          <div class="card wi-panel wi-left">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+              </div><h3 class="card-title">Machine Conditions</h3></div>
+              <span class="dataset-pill">SCENARIO INPUTS</span>
+            </div>
+            <div class="wi-ctrls">
+            <div class="wi-ctrl" data-wi-ctrl="Air">
+              <div class="wi-ctrl-top"><span class="wi-ctrl-label">AIR TEMPERATURE</span><span class="wi-ctrl-unit">K</span></div>
+              <div class="wi-ctrl-inputs">
+                <input type="range" id="wiAirRange" class="wi-range" min="295" max="305" step="0.1" value="298.5" aria-label="AIR TEMPERATURE scenario slider">
+                <input type="number" id="wiAirNum" class="wi-num" min="295" max="305" step="0.1" value="298.5" aria-label="AIR TEMPERATURE numeric value">
+              </div>
+              <div class="wi-ctrl-scale"><span>295</span><span class="wi-ctrl-band">VISUALIZATION RANGE</span><span>305</span></div>
+              <div class="wi-ctrl-err" id="wiAirErr" role="alert"></div>
+            </div>
+            <div class="wi-ctrl" data-wi-ctrl="Proc">
+              <div class="wi-ctrl-top"><span class="wi-ctrl-label">PROCESS TEMPERATURE</span><span class="wi-ctrl-unit">K</span></div>
+              <div class="wi-ctrl-inputs">
+                <input type="range" id="wiProcRange" class="wi-range" min="305" max="315" step="0.1" value="308.8" aria-label="PROCESS TEMPERATURE scenario slider">
+                <input type="number" id="wiProcNum" class="wi-num" min="305" max="315" step="0.1" value="308.8" aria-label="PROCESS TEMPERATURE numeric value">
+              </div>
+              <div class="wi-ctrl-scale"><span>305</span><span class="wi-ctrl-band">VISUALIZATION RANGE</span><span>315</span></div>
+              <div class="wi-ctrl-err" id="wiProcErr" role="alert"></div>
+            </div>
+            <div class="wi-ctrl" data-wi-ctrl="Rpm">
+              <div class="wi-ctrl-top"><span class="wi-ctrl-label">ROTATIONAL SPEED</span><span class="wi-ctrl-unit">rpm</span></div>
+              <div class="wi-ctrl-inputs">
+                <input type="range" id="wiRpmRange" class="wi-range" min="1100" max="2900" step="5" value="1540" aria-label="ROTATIONAL SPEED scenario slider">
+                <input type="number" id="wiRpmNum" class="wi-num" min="1100" max="2900" step="5" value="1540" aria-label="ROTATIONAL SPEED numeric value">
+              </div>
+              <div class="wi-ctrl-scale"><span>1100</span><span class="wi-ctrl-band">VISUALIZATION RANGE</span><span>2900</span></div>
+              <div class="wi-ctrl-err" id="wiRpmErr" role="alert"></div>
+            </div>
+            <div class="wi-ctrl" data-wi-ctrl="Torque">
+              <div class="wi-ctrl-top"><span class="wi-ctrl-label">TORQUE</span><span class="wi-ctrl-unit">Nm</span></div>
+              <div class="wi-ctrl-inputs">
+                <input type="range" id="wiTorqueRange" class="wi-range" min="3.5" max="80" step="0.5" value="39.5" aria-label="TORQUE scenario slider">
+                <input type="number" id="wiTorqueNum" class="wi-num" min="3.5" max="80" step="0.5" value="39.5" aria-label="TORQUE numeric value">
+              </div>
+              <div class="wi-ctrl-scale"><span>3.5</span><span class="wi-ctrl-band">VISUALIZATION RANGE</span><span>80</span></div>
+              <div class="wi-ctrl-err" id="wiTorqueErr" role="alert"></div>
+            </div>
+            <div class="wi-ctrl" data-wi-ctrl="Wear">
+              <div class="wi-ctrl-top"><span class="wi-ctrl-label">TOOL WEAR</span><span class="wi-ctrl-unit">min</span></div>
+              <div class="wi-ctrl-inputs">
+                <input type="range" id="wiWearRange" class="wi-range" min="0" max="260" step="1" value="85" aria-label="TOOL WEAR scenario slider">
+                <input type="number" id="wiWearNum" class="wi-num" min="0" max="260" step="1" value="85" aria-label="TOOL WEAR numeric value">
+              </div>
+              <div class="wi-ctrl-scale"><span>0</span><span class="wi-ctrl-band">VISUALIZATION RANGE</span><span>260</span></div>
+              <div class="wi-ctrl-err" id="wiWearErr" role="alert"></div>
+            </div>
+            </div>
+            <div class="muted-note">Ranges are this prototype's <strong>visualization / model-input ranges</strong> copied from the existing sensor validator. They are <strong>not</strong> industrial safety limits. Product type stays with the live machine.</div>
+          </div>
+
+          <div class="card wi-panel wi-center">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div><h3 class="card-title">Digital Twin</h3></div>
+              <span class="dataset-pill">DIGITAL TWIN VISUALIZATION</span>
+            </div>
+            <div class="viz-twin-holder wi-twin-holder" id="twinWhatIfHolder"></div>
+            <div class="wi-twinfoot">
+              <span class="muted-note">The twin reacts to the <strong>scenario</strong> values while the lab is open. Motion, glow and vibration are <strong>conceptual visualization only</strong> &mdash; nothing here is a physical measurement of a real machine.</span>
+            </div>
+          </div>
+
+          <div class="card wi-panel wi-right">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div><h3 class="card-title">AI Risk Engine</h3></div>
+              <span class="dataset-pill">RANDOM FOREST</span>
+            </div>
+            <div class="wi-riskstack">
+              <div class="wi-riskrow"><span class="wi-risk-k">BASELINE RISK</span><span class="wi-risk-v" id="wiBaseRisk">--</span><span class="wi-risk-u">%</span></div>
+              <div class="wi-riskrow wi-risk-scen"><span class="wi-risk-k">SCENARIO RISK</span><span class="wi-risk-v" id="wiScenRisk">--</span><span class="wi-risk-u">%</span></div>
+              <div class="wi-riskrow wi-risk-delta"><span class="wi-risk-k">RISK CHANGE</span><span class="wi-risk-v" id="wiDelta">--</span><span class="wi-risk-u">pp</span></div>
+            </div>
+            <div class="wi-level" id="wiLevelWrap"><span class="wi-level-icon" id="wiLevelIcon">&#9679;</span><span class="wi-level-text" id="wiLevelText">NO SCENARIO RUN</span></div>
+            <div class="wi-bars">
+              <div class="wi-bar-label"><span>BASELINE</span><span id="wiBasePct">--</span></div>
+              <div class="wi-bar"><span class="wi-bar-fill wi-bar-base" id="wiBaseBar"></span></div>
+              <div class="wi-bar-label"><span>SCENARIO</span><span id="wiScenPct">--</span></div>
+              <div class="wi-bar"><span class="wi-bar-fill wi-bar-scen" id="wiScenBar"></span></div>
+            </div>
+            <div class="wi-meta" id="wiMeta">Baseline is the live machine reading at the moment the lab was opened. Run an analysis to compare.</div>
+            <div class="wi-advisory" id="wiAdvisory"></div>
+            <div class="wi-rul"><span class="wi-rul-k">RUL</span><span class="wi-rul-v">Not available</span><span class="wi-rul-n">Binary classification model &mdash; does not predict time-to-failure.</span></div>
+          </div>
+        </div>
+
+        <div class="wi-bottom">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+              </div><h3 class="card-title">Model Response</h3></div>
+              <span class="dataset-pill">ACTUAL MODEL OUTPUTS</span>
+            </div>
+            <div class="wi-models" id="wiModels"></div>
+            <div class="muted-note">Each card shows the failure probability returned by that fitted model for the same scenario row. Nothing is averaged into an invented ensemble.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l3-3 3 2 4-6"/></svg>
+              </div><h3 class="card-title">Scenario Risk Trend</h3></div>
+              <span class="dataset-pill" id="wiTrendPill">NO DATA</span>
+            </div>
+            <div class="canvas-wrapper wi-trend-wrap"><canvas id="wiTrendChart" width="900" height="220"></canvas></div>
+            <div class="muted-note">Plots only the predictions actually produced in this session. No synthetic history.</div>
+          </div>
+        </div>
+
+        <div class="wi-bottom">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              </div><h3 class="card-title">Scenario History</h3></div>
+              <span class="dataset-pill" id="wiHistoryCount">0 RUNS</span>
+            </div>
+            <div class="wi-history" id="wiHistory"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M14 3h7v7M10 14 21 3"/></svg>
+              </div><h3 class="card-title">Scenario Comparison</h3></div>
+              <span class="dataset-pill">BASELINE vs SCENARIO A vs B</span>
+            </div>
+            <div class="wi-compare" id="wiCompare"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+            </div><h3 class="card-title">Feature Impact</h3></div>
+            <span class="dataset-pill" id="wiImpactPill">ABLATION vs NOMINAL</span>
+          </div>
+          <div class="wi-impact" id="wiImpact"></div>
+          <div class="muted-note" id="wiImpactNote"></div>
+        </div>
+
+        <div class="wi-scan" id="wiScan" hidden>
+          <div class="wi-scan-card">
+            <ul class="scan-steps" id="wiScanSteps">
+              <li>SCENARIO RECEIVED</li><li>FEATURES VALIDATED</li><li>DECISION TREE</li><li>RANDOM FOREST</li>
+              <li>SVM (RBF)</li><li>RISK ANALYSIS</li><li>SCENARIO RESULT</li>
+            </ul>
+            <div class="wi-scan-foot">Presentation timing only. The numbers appear from the models' actual return values.</div>
+          </div>
+        </div>
+      </section>
+
+<section class="view hidden" id="view-fleet" role="tabpanel" aria-label="Machine fleet">
+        <div class="view-head">
+          <div><h2 class="view-title">Machine Fleet</h2>
+          <span class="view-sub">Simulated fleet &mdash; every risk value is recomputed live by the Random Forest</span></div>
+          <span class="dataset-pill pill-offline">SIMULATED FLEET</span>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </div><h3 class="card-title">CNC Cell Overview</h3></div>
+            <span class="dataset-pill" id="fleetSummary">--</span>
+          </div>
+          <div class="fleet-grid" id="fleetGrid"></div>
+          <div class="muted-note">Fleet profiles are invented sensor sets (clearly simulated), and the monitored asset (CNC-MILL-08) always mirrors the current live reading. Every risk figure below is recomputed live by the three fitted models. Click any machine to load it into the pipeline and open its Digital Twin.</div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-maintenance" role="tabpanel" aria-label="Maintenance recommendations">
+        <div class="view-head">
+          <div><h2 class="view-title">Maintenance Recommendations</h2>
+          <span class="view-sub">Advisory rule-engine output &mdash; not a model prediction, and no remaining-useful-life (RUL) model exists in this project</span></div>
+          <span class="dataset-pill pill-offline">ADVISORY</span>
+        </div>
+        <div class="dash-grid">
+          <div class="card maint-primary">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              </div><h3 class="card-title">AI Maintenance Advisory</h3></div>
+              <span class="dataset-pill" id="maintPriorityPill">--</span>
+            </div>
+            <div class="maint-headline">
+              <div class="maint-priority" id="maintPriority">--</div>
+              <div class="maint-headline-meta">
+                <span class="maint-status-chip" id="maintStatusChip">ADVISORY</span>
+                <span class="maint-rule-chip">RULE-BASED</span>
+              </div>
+            </div>
+            <div class="maint-field">
+              <span class="maint-field-label">Reason</span>
+              <div class="maint-reason" id="maintReason">Awaiting the first inference&hellip;</div>
+            </div>
+            <div class="maint-field">
+              <span class="maint-field-label">Recommended action</span>
+              <div class="maint-action" id="maintAction">--</div>
+            </div>
+            <div class="muted-note" id="maintUpdated">--</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </div><h3 class="card-title">Remaining Useful Life</h3></div>
+              <span class="dataset-pill pill-offline">NOT AVAILABLE</span>
+            </div>
+            <div class="rul-state">
+              <div class="rul-value">RUL<strong>Not available</strong></div>
+              <div class="rul-detail">
+                <div class="rul-row"><span class="rul-key">Model type</span><span class="rul-val">Binary classification</span></div>
+                <div class="rul-row"><span class="rul-key">Predicts</span><span class="rul-val">Failure vs. no failure (probability)</span></div>
+                <div class="rul-row"><span class="rul-key">Does not predict</span><span class="rul-val">Time-to-failure</span></div>
+              </div>
+            </div>
+            <div class="muted-note">No regression model was trained in this project, so no hours-remaining figure is produced anywhere. An "X minutes remaining" value would be fabricated; the advisory engine reports threshold conditions instead.</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div><h3 class="card-title">Advisory Indicator Levels</h3></div>
+              <span class="dataset-pill">RULE-BASED</span>
+            </div>
+            <div class="maint-indicators" id="maintIndicators"></div>
+            <div class="muted-note">Levels: Normal &lt; 25% &middot; Elevated 25&ndash;50% &middot; Critical &ge; 50%. These are the prototype's advisory rule outputs (documented AI4I-style definitions), not Random Forest probabilities.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div><h3 class="card-title">All Recommendations from the Advisory Engine</h3></div>
+              <span class="dataset-pill" id="maintCountPill">--</span>
+            </div>
+            <div class="prescriptions-container" id="maintList"></div>
+            <div class="muted-note" id="maintDisclaimer">This panel reflects the prototype's advisory rules and threshold checks. It is not a certified maintenance instruction, it does not estimate remaining useful life, and no "minutes remaining" style figure is produced anywhere in this project.</div>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-settings" role="tabpanel" aria-label="Settings and system">
+        <div class="view-head">
+          <div><h2 class="view-title">Settings &amp; System</h2>
+          <span class="view-sub">Simulation controls, risk thresholds and full transparency about what this prototype is</span></div>
+          <span class="dataset-pill pill-offline" id="settingsSavedPill">PERSISTED LOCALLY</span>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div><h3 class="card-title">Simulation Controls</h3></div>
+              <span class="dataset-pill">SIMULATED TELEMETRY</span>
+            </div>
+            <div class="settings-list">
+              <div class="setting-row">
+                <div class="setting-label"><span>Stream interval</span><small>How often the simulated telemetry produces a reading</small></div>
+                <select id="setInterval" class="toolbar-select">
+                  <option value="350">350 ms</option>
+                  <option value="700">700 ms (default)</option>
+                  <option value="1200">1200 ms</option>
+                  <option value="2000">2000 ms</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Simulation speed</span><small>Multiplier on the sensor drift per reading</small></div>
+                <select id="setSpeed" class="toolbar-select">
+                  <option value="0.5">0.5× (slow drift)</option>
+                  <option value="1">1× (default)</option>
+                  <option value="2">2× (fast drift)</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Noise level</span><small>Random jitter added to simulated sensors</small></div>
+                <div class="setting-slider">
+                  <input type="range" id="setNoise" class="slider-input" min="0" max="3" step="0.25" value="1" aria-label="Noise level">
+                  <span class="numeric-label" id="setNoiseVal">1.00×</span>
+                </div>
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Auto-run telemetry on load</span><small>Start the simulated stream automatically when the app opens</small></div>
+                <input type="checkbox" id="setAutoRun" class="checkbox-input">
+              </div>
+            </div>
+            <div class="muted-note">The stream is simulated by this prototype — there is no live factory connection. Changing the interval restarts the stream if it is running.</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+              </div><h3 class="card-title">Risk Thresholds &amp; Display</h3></div>
+              <span class="dataset-pill" id="thresholdPill">--</span>
+            </div>
+            <div class="settings-list">
+              <div class="setting-row">
+                <div class="setting-label"><span>Warning threshold (%)</span><small>Risk at which the app shows WARNING</small></div>
+                <input type="number" id="setWarning" class="numeric-input narrow" min="1" max="99" step="1" value="28">
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Critical threshold (%)</span><small>Risk at which the app shows CRITICAL</small></div>
+                <input type="number" id="setCritical" class="numeric-input narrow" min="2" max="100" step="1" value="65">
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Compact mode</span><small>Tighter spacing for smaller screens</small></div>
+                <input type="checkbox" id="setCompact" class="checkbox-input">
+              </div>
+              <div class="setting-row">
+                <div class="setting-label"><span>Fullscreen</span><small>Toggle browser fullscreen for presentations</small></div>
+                <button class="qa-btn" id="btnFullscreen" type="button">Toggle Fullscreen</button>
+              </div>
+            </div>
+            <div class="muted-note" id="thresholdNote">Thresholds change this app's labels, colours and alerts only. The Random Forest's raw probability is never altered — with the default 28% / 65% values the app matches the model's own classification bands exactly.</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div><h3 class="card-title">System Status</h3></div>
+              <span class="dataset-pill" id="sysStatusPill">CHECKING</span>
+            </div>
+            <div class="sys-list">
+              <div class="sys-row"><span class="sys-key">Dataset</span><span class="sys-val" id="sysDataset">--</span></div>
+              <div class="sys-row"><span class="sys-key">ML models</span><span class="sys-val" id="sysModels">--</span></div>
+              <div class="sys-row"><span class="sys-key">Validation</span><span class="sys-val" id="sysValidation">--</span></div>
+              <div class="sys-row"><span class="sys-key">Optimization</span><span class="sys-val" id="sysOptimization">--</span></div>
+              <div class="sys-row"><span class="sys-key">Deployment</span><span class="sys-val" id="sysDeployment">--</span></div>
+              <div class="sys-row"><span class="sys-key">Data source</span><span class="sys-val" id="sysData">--</span></div>
+              <div class="sys-row"><span class="sys-key">Live inference</span><span class="sys-val" id="sysInference">--</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div><h3 class="card-title">About the Model</h3></div>
+              <span class="dataset-pill">TRANSPARENCY</span>
+            </div>
+            <div class="about-model">
+              <p><strong>Random Forest &middot; 300 trees</strong> &mdash; the only model that runs here. The full serialized forest is bundled in <code>model-data.js</code>; every risk percentage in this app is a real prediction from it, computed in your browser.</p>
+              <p><strong>Decision Tree and SVM (RBF)</strong> were benchmark-only in the original training study. They are now fitted inside this project by <code>train-baselines.mjs</code> on the same AI4I 2020 dataset, with the same features, the same stratified 80/20 split and the same <code>class_weight="balanced"</code> rule &mdash; and their artifacts (<code>model-artifacts.js</code>) are loaded at runtime, so all three classifiers score every reading in the browser.</p>
+              <p><strong>Advisory indicators (TWF/HDF/PWF/OSF/RNF)</strong> are rule-based scores using the documented AI4I thresholds. They are labelled as advisory everywhere and must never be read as model probabilities.</p>
+              <p><strong>Session data</strong> (history, settings) is stored only in your browser's local storage. Exports are generated locally from the current session's real values.</p>
+              <p class="muted-note">This is an academic prototype: not certified for industrial, safety or financial decisions.</p>
+              <details class="doc-detail">
+                <summary>What is predictive maintenance &amp; machine failure prediction?</summary>
+                <div>Predictive maintenance detects degradation in machinery <em>before</em> it becomes a breakdown, so interventions can be planned instead of reacting to failures. This project tackles the binary version of the problem: given the current operating readings of a machine, predict whether it will fail (<code>1</code>) or not (<code>0</code>). The AI4I 2020 target column <code>Machine Failure</code> is exactly that label.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Why these three models (Random Forest, Decision Tree, SVM)?</summary>
+                <div><strong>Random Forest</strong> (300 trees, <code>class_weight="balanced"</code>) is the primary model — an ensemble of decision trees that captures non-linear sensor interactions (e.g. torque × wear) without feature scaling, and it achieved the best documented F1 (0.691) in the training study. <strong>Decision Tree</strong> is the interpretable single-tree baseline. <strong>SVM with an RBF kernel</strong> is the margin-based classic for imbalanced tabular data. All three were tuned with stratified 5-fold GridSearchCV optimising F1; only the Random Forest artifact was exported into this project, so only it runs live here.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Why does class imbalance matter (3.39%)?</summary>
+                <div>Only 339 of 10,000 records are failures (~3.39%). A model that always predicts "no failure" would be 96.6% accurate yet completely useless. That is why the project uses a <strong>stratified</strong> train/test split (failure ratio preserved everywhere), <strong>class_weight="balanced"</strong> (misclassifying a rare failure costs more), and <strong>F1</strong> as the GridSearchCV objective instead of accuracy.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Why F1-score and ROC-AUC?</summary>
+                <div><strong>F1</strong> is the harmonic mean of precision and recall — a single number that punishes both "missing failures" (low recall) and "crying wolf" (low precision), which accuracy cannot do under 3.39% imbalance. <strong>ROC-AUC</strong> measures how well the model ranks risky machines above healthy ones across all thresholds; the Random Forest's documented test ROC-AUC is 0.969, meaning separation is strong even though the default 0.5 threshold yields a conservative F1 of 0.691.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Why is "Failure Type" excluded from the features?</summary>
+                <div><code>Failure Type</code> is only populated when a failure has already happened and is derived from the same underlying failure signals — feeding it into a failure predictor is <strong>data leakage</strong> (the model would cheat by reading the answer). The six legitimate inputs are: Product Type, Air Temperature, Process Temperature, Rotational Speed, Torque, Tool Wear. UDI and Product ID are identifiers, not features. The five failure-mode codes (TWF/HDF/PWF/OSF/RNF) appear in this app only as <strong>rule-based advisory indicators</strong>, never as classifier outputs.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Simulation vs real telemetry — what is actually real here?</summary>
+                <div><strong>Real:</strong> the Random Forest model (serialized trees in <code>model-data.js</code>), every probability/risk percentage it produces, the documented benchmark metrics, and the ablation-based feature contributions. <strong>Simulated:</strong> the sensor telemetry stream, the machine fleet, the demo script and all scenario values — generated by this prototype, with no physical sensors connected. Every panel that shows simulated data is labelled accordingly.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Where each metric comes from</summary>
+                <div>The Random Forest F1 (0.691) and ROC-AUC (0.969) are the values documented by the original training study. The Decision Tree and SVM metrics shown here were <strong>measured by <code>train-baselines.mjs</code></strong> on a stratified 80/20 split (seed 42) of the same dataset, and <code>verify-artifacts.mjs</code> re-scores that held-out split using only the shipped artifacts to prove the two agree. Provenance is labelled on every card, so the two sources are never mixed silently.</div>
+              </details>
+              <details class="doc-detail">
+                <summary>Current limitations</summary>
+                <div>Failures are rare and weakly separable: even the best model here leaves most errors as false negatives, so a low risk reading is not a guarantee. The SVM is the weakest of the three (ROC-AUC 0.954 but F1 0.475) and is reported as measured rather than tuned to flatter itself. There is no RUL/time-to-failure model, so no "hours remaining" figure exists anywhere. Advisory indicators are thresholds, not ML. Telemetry is simulated. Results are academic-prototype quality &mdash; not certified for industrial or safety decisions.</div>
+              </details>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="grid-column:1 / -1;">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M5 16v-2h14v2"/></svg>
+            </div><h3 class="card-title">System Architecture</h3></div>
+            <span class="dataset-pill">CURRENT IMPLEMENTATION</span>
+          </div>
+          <div class="arch-flow" aria-label="Current implementation data flow">
+            <span class="arch-node arch-sim">Machine Telemetry<small>simulated sensors</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node">Data Preprocessing<small>sanitize &middot; clamp &middot; feature order</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node">Feature Engineering<small>6 inputs: type &middot; air &middot; proc &middot; speed &middot; torque &middot; wear</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-model">ML Models<small>Decision Tree &middot; Random Forest &middot; SVM-RBF &mdash; all live</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-real">Prediction / Risk Analysis<small>real RF probability &rarr; LOW / MEDIUM / HIGH / CRITICAL</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node">Explainability<small>ablation feature contributions</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-adv">Maintenance Advisory<small>rule-based &middot; labelled</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-out">Dashboard &middot; Alerts &middot; History<small>views &middot; localStorage &middot; CSV export</small></span>
+          </div>
+          <div class="muted-note">Every stage above runs offline in your browser — there is no server, no cloud endpoint and no database. All three ML stages (Decision Tree, Random Forest, SVM-RBF) are real fitted models executing in the page; only the telemetry, scenarios and fleet profiles are simulated.</div>
+          <div class="card-header" style="margin-top:18px;">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div><h3 class="card-title">Future IoT Deployment</h3></div>
+            <span class="dataset-pill pill-offline">FUTURE WORK &mdash; NOT IMPLEMENTED</span>
+          </div>
+          <div class="arch-flow arch-flow-future" aria-label="Future IoT architecture (not implemented)">
+            <span class="arch-node arch-future">Physical Sensors<small>temperature &middot; vibration &middot; current</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-future">ESP32 / Edge Gateway<small>sampling &middot; buffering</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-future">HTTP API<small>telemetry ingest</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-future">ML Engine<small>same model artifacts</small></span>
+            <span class="arch-arrow">&rarr;</span>
+            <span class="arch-node arch-future">Dashboard<small>this control centre</small></span>
+          </div>
+          <div class="muted-note">Design reference only. This project contains no firmware, no API server and no connected hardware — the current prototype replaces this path with the simulated telemetry engine.</div>
+        </div>
+        <div class="card" style="grid-column:1 / -1;">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 4 2.8c-.8.4-1 1-1 1.7v.5"/><circle cx="12" cy="18" r="0.5"/><circle cx="12" cy="12" r="10"/></svg>
+            </div><h3 class="card-title">Viva Mode &mdash; Technical Facts</h3></div>
+            <span class="dataset-pill">EXAMINATION READY</span>
+          </div>
+          <div class="viva-list">
+            <details class="doc-detail"><summary>Which dataset was used?</summary><div>AI4I 2020 Predictive Maintenance Dataset — 10,000 records, 339 failures (~3.39%), six predictive features (Product Type, Air Temperature, Process Temperature, Rotational Speed, Torque, Tool Wear) plus the binary <code>Machine Failure</code> target. UDI and Product ID are identifiers and are excluded.</div></details>
+            <details class="doc-detail"><summary>What is the target variable?</summary><div>Binary <code>Machine Failure</code> (0 = no failure, 1 = failure). The application answers "will it fail?", not "which failure mode?" and not "when exactly?".</div></details>
+            <details class="doc-detail"><summary>Why was Failure Type removed from the inputs?</summary><div>Data leakage. Failure Type is populated only after a failure occurs and encodes the answer. Including it would inflate metrics without real predictive skill. It is shown in the app solely as rule-based advisory indicators.</div></details>
+            <details class="doc-detail"><summary>Why is the dataset imbalanced and what was done about it?</summary><div>3.39% positives. Remedies: stratified train/test split, stratified 5-fold GridSearchCV, <code>class_weight="balanced"</code> on all three models, and F1 as the optimisation metric instead of accuracy.</div></details>
+            <details class="doc-detail"><summary>Why F1 instead of accuracy?</summary><div>Accuracy is misleading — predicting "always no failure" gives 96.6% accuracy with zero recall. F1 (harmonic mean of precision and recall) punishes both missed failures and false alarms.</div></details>
+            <details class="doc-detail"><summary>Why Random Forest as the primary model?</summary><div>Bagging over 300 trees handles non-linear sensor interactions and noisy features without scaling, reduces over-fitting vs a single tree, and it delivered the study's best documented F1 = 0.691 with ROC-AUC = 0.969 under class_weight="balanced".</div></details>
+            <details class="doc-detail"><summary>Why include SVM and a Decision Tree?</summary><div>They are the classic baselines: the tree for interpretability, the RBF-kernel SVM as a margin-based comparator. Both were tuned in the same study, but only the Random Forest artifact was exported — so in this prototype they are labelled benchmark-only with honest N/A metrics.</div></details>
+            <details class="doc-detail"><summary>What does ROC-AUC = 0.969 mean?</summary><div>The model ranks a randomly chosen failing machine above a randomly chosen healthy one ~97% of the time. It measures ranking quality across all thresholds — separate from the operating-point F1 of 0.691.</div></details>
+            <details class="doc-detail"><summary>What is predictive maintenance?</summary><div>Maintaining equipment based on its actual measured condition so failures are prevented or planned for, instead of fixed schedule (preventive) or after breakdown (reactive). This project adds the data-driven prediction layer.</div></details>
+            <details class="doc-detail"><summary>Prediction vs RUL — what does this app output?</summary><div>A failure probability (0–100%) and a risk band from a binary classifier. It does <strong>not</strong> predict time-to-failure: no regression model for Remaining Useful Life was trained, so RUL is explicitly displayed as "not available" — no hours-remaining figure is ever shown.</div></details>
+            <details class="doc-detail"><summary>Is this connected to real machines?</summary><div>No. Telemetry, the machine fleet and all scenario values are simulated by the prototype. The only real ML asset is the serialized Random Forest executing locally in the browser. No sensors, no IoT, no cloud — it is an offline academic prototype.</div></details>
+            <details class="doc-detail"><summary>What are the main limitations?</summary><div>DT/SVM artifacts not bundled (benchmark-only), advisory indicators are thresholds rather than ML, telemetry is simulated, no RUL model, no probability calibration display for the SVM, and results are not certified for industrial use.</div></details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            </div><h3 class="card-title">Data Management</h3></div>
+            <span class="dataset-pill" id="storagePill2">PERSISTED LOCALLY</span>
+          </div>
+          <div class="quick-actions">
+            <button class="qa-btn" id="btnClearHistory2" type="button">Clear Prediction History</button>
+            <button class="qa-btn" id="btnResetSim" type="button">Reset Simulation to Baseline</button>
+            <button class="qa-btn qa-crit" id="btnClearStored" type="button">Clear All Stored App Data</button>
+          </div>
+          <div class="muted-note" id="dataNote">Clearing history removes the stored event log. Resetting the simulation restores the nominal operating point. Clearing stored data also resets your settings to defaults.</div>
+        </div>
+      </section>
+      <section class="view hidden" id="view-viz3d" role="tabpanel" aria-label="3D operating space visualisation">
+        <div class="view-head">
+          <div><h2 class="view-title">Digital Twin &middot; Operating Space</h2>
+          <span class="view-sub">Failure-risk landscape over Tool Wear × Torque × Process Temperature &mdash; evaluated live by the Random Forest</span></div>
+          <span class="dataset-pill pill-offline">CUSTOM CANVAS &middot; NO 3D LIBRARY</span>
+        </div>
+        <div class="viz-twin-holder" id="twinVizHolder"></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group"><div class="card-title-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div><h3 class="card-title">Risk Landscape</h3></div>
+            <span class="dataset-pill" id="viz3dPill">SIMULATED GRID &middot; LIVE RF</span>
+          </div>
+          <div class="viz3d-wrap"><canvas id="viz3dCanvas"></canvas></div>
+          <div class="viz3d-controls">
+            <div class="viz3d-buttons">
+              <button class="card-action-btn" id="btnVizZoomIn" type="button">Zoom +</button>
+              <button class="card-action-btn" id="btnVizZoomOut" type="button">Zoom −</button>
+              <button class="card-action-btn" id="btnVizReset" type="button">Reset Camera</button>
+              <button class="card-action-btn" id="btnVizRefresh" type="button">Re-evaluate Grid</button>
+            </div>
+            <div class="viz3d-toggles">
+              <label class="toggle-label"><input type="checkbox" id="vizShowNormal" checked> Normal (&lt; warning)</label>
+              <label class="toggle-label"><input type="checkbox" id="vizShowRisk" checked> Warning band</label>
+              <label class="toggle-label"><input type="checkbox" id="vizShowCritical" checked> Critical (≥ threshold)</label>
+              <label class="toggle-label"><input type="checkbox" id="vizShowCurrent" checked> Current reading marker</label>
+            </div>
+          </div>
+          <div class="muted-note" id="viz3dMeta">The coordinate cloud shows simulated operating points scored by the real forest. Drag to rotate, scroll to zoom, double-click to reset. No Three.js — the projection is custom canvas code.</div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div><h3 class="card-title">How to read this map</h3></div>
+            </div>
+            <div class="xai-explain">
+              <p>Each cube is a simulated operating point (<strong>tool wear</strong> along one axis, <strong>torque</strong> along another, <strong>process temperature</strong> along the third). Its colour is the Random Forest's real failure-risk output for that point.</p>
+              <p>The <strong>blue marker</strong> is the current reading from the pipeline — move the sliders or run a scenario and watch it travel through the risk landscape.</p>
+              <p class="muted-note" style="margin-top:10px;">Air temperature, spindle speed and product type are held at the current reading while the grid is evaluated, so the landscape always reflects this machine's context. Re-evaluate whenever you change those values.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group"><div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div><h3 class="card-title">Current Reading</h3></div>
+            </div>
+            <div id="viz3dReading">--</div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="app-footer">
+      <div><strong>MACHINE INTELLIGENCE V9.0 &middot; AI-POWERED PREDICTIVE MAINTENANCE &middot; Industrial Digital Twin</strong> &middot; AI4I 2020 &middot; Offline ML prototype &mdash; inference from all three fitted models (Random Forest, Decision Tree, SVM-RBF) runs entirely in your browser. All telemetry, scenarios, demo steps and fleet profiles are simulated.</div>
+      <div class="footer-links">
+        <span class="footer-link">Simulation-aware</span>
+        <span class="footer-link">No fabricated ML results</span>
+        <span class="footer-link">AI4I-2020 benchmark</span>
+      </div>
+    </footer>
+    <div id="reportModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Machine report">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Machine Report &mdash; generated locally from real session values</h3>
+          <div class="modal-actions">
+            <button class="card-action-btn" id="btnReportPrint" type="button">Print / Save as PDF</button>
+            <button class="card-action-btn" id="btnReportClose" type="button">Close</button>
+          </div>
+        </div>
+        <div class="modal-body" id="reportBody"></div>
+      </div>
+    </div>
+
+  </div>
+  <button id="btnExitPresentation" type="button" title="Exit presentation mode (Esc)">EXIT PRESENTATION &middot; ESC</button>
+  <div id="scanOverlay" class="scan-overlay hidden" aria-hidden="true">
+    <div class="scan-box">
+      <div class="scan-title">Analyzing telemetry</div>
+      <ul class="scan-steps" id="scanSteps">
+        <li>SCANNING TELEMETRY</li>
+        <li>PREPROCESSING FEATURES</li>
+        <li>DECISION TREE &middot; CART</li>
+        <li>RANDOM FOREST &middot; 300 TREES</li>
+        <li>SVM (RBF) &middot; SUPPORT VECTORS</li>
+        <li>RISK ANALYSIS</li>
+        <li>RESULT READY</li>
+      </ul>
+      <div class="scan-foot">All three fitted models score every reading here in the browser: the fitted Decision Tree, the 300-tree Random Forest and the RBF-SVM over its support vectors. The headline risk is the Random Forest output &mdash; no weighted ensemble is invented, because no principled weight set was measured for this project.</div>
+    </div>
+  </div>
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
+  <div class="xa-hud" id="xaHud" hidden role="dialog" aria-modal="false" aria-labelledby="xaHudTitle">
+    <div class="xa-hud-head">
+      <span class="xa-hud-kicker">FEATURE INSPECTOR</span>
+      <h4 id="xaHudTitle">FEATURE</h4>
+      <button class="xa-hud-close" id="xaHudClose" type="button" aria-label="Close feature inspector">&#10005;</button>
+    </div>
+    <div class="xa-hud-body" id="xaHudBody"></div>
+  </div>
+  <script src="model-artifacts.js"></script>
+  <script src="model-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

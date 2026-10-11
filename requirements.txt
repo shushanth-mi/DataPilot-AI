@@ -1,0 +1,11 @@
+# Adaptive Data Intelligence Platform — Python dependencies
+# (verified against installed versions: python 3.14, streamlit 1.65, sklearn 1.9, pandas 3.0)
+streamlit>=1.50
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+plotly>=5.18
+openpyxl>=3.1
+reportlab>=4.0
+pytest>=8.0

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.adip_runs/
+*.log
+~$*
+.streamlit/secrets.toml
